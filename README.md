@@ -28,15 +28,13 @@ All the examples (except the non-distributed example) live in a folder.  To run 
 ```bash
 cd <example_name>/
 bash run.sh
-``` 
-.  
+``` .  
 
 In order to completely stop the example, you'll need to kill the python processes associated with it.  If you want to stopped training early, then there will be python processes for each of the workers in addition to the parameter server processes.  Unfortunately, the parameter server processes continue to run even after the workers are finished--these will always need to be killed manually.   To kill all python processes run 
 
 ```bash
 sudo pkill python
-```
-.
+```.
 
 # Requirements
 
