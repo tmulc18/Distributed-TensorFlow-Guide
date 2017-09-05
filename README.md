@@ -41,5 +41,4 @@ sudo pkill python
 * Python 2.7
 * TensorFlow >= 1.2
 
-# License
 
