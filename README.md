@@ -1,7 +1,9 @@
 # Distributed TensorFlow Examples
 Currently, there are few examples of distributed TensorFlow code.  Further, the examples that do exist are often overwhelming because they don't focus on the basics of distributed computing, but rather with how to distribute an already complicated model.
 
-This is collection of examples for help getting started with distributed computing in TensorFlow and that can act as boilerplate code.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras).  The official Distributed TensorFlow guide can be found [here]( https://www.tensorflow.org/deploy/distributed).  Almost all the examples can be run on a single machine with a CPU. 
+This is collection of examples for help getting started with distributed computing in TensorFlow and that can act as boilerplate code.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/).  The official Distributed TensorFlow guide can be found [here]( https://www.tensorflow.org/deploy/distributed).  
+
+Almost all the examples can be run on a single machine with a CPU. 
 
 
 # Examples
@@ -11,14 +13,14 @@ The complete list of examples is below.  The asynchronous examples are *easier* 
 * `Non-Distributed Setup`
 * `Distributed Setup`
 * `HogWild` (Asychronous SGD)
-* `ADAG` (Asynchronous Distributed Adaptive Gradients)
+* `ADAG` (Asynchronous Distributed Adaptive Gradients) **WIP**
 * `Synchronous SGD`
 * `Synchronous SGD different learning rates`
-* `SDAG` (Synchronous Distributed Adaptive Gradients)
+* `SDAG` (Synchronous Distributed Adaptive Gradients) **WIP**
 * `Multiple GPUs Single Machine`
-* **Dynamic SGD (TODO)**
-* **Asynchronous Elastic Averaging SGD (AEASGD) (TODO)**
-* **Asynchronous Elastic Averaging Momentum SGD (AEAMSGD) (TODO)**
+* Dynamic SGD **(TODO)**
+* Asynchronous Elastic Averaging SGD (AEASGD) **(TODO)**
+* Asynchronous Elastic Averaging Momentum SGD (AEAMSGD) **(TODO)**
 
 # Running Examples
 All the examples (except the non-distributed example) live in a folder.  To run them, move to the example directory and run the bash script.
