@@ -11,7 +11,7 @@ The complete list of examples is below.  The asynchronous examples are *easier* 
 * `Non-Distributed Setup`
 * `Distributed Setup`
 * `HogWild` (Asychronous SGD)
-* `ADAG` (Asynchronous Distributed Adaptive Gradients) (TODO)
+* `ADAG` (Asynchronous Distributed Adaptive Gradients)
 * `Synchronous SGD`
 * `Synchronous SGD different learning rates`
 * `SDAG` (Synchronous Distributed Adaptive Gradients)
