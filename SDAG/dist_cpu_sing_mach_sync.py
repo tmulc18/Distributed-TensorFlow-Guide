@@ -1,5 +1,6 @@
 """
-Synchronous updates with time window (ADSG)
+Synchronous Distributed Adaptive Gradients (SDAG)
+Performs synchronous updates with time window 
 
 Author: Tommy Mulc
 """

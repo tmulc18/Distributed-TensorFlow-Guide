@@ -34,16 +34,15 @@ def main():
 			opt = tf.train.GradientDescentOptimizer(.0001).minimize(loss)
 
 		# Session
-				#Monitored Training Session
-		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief)
+		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,is_chief=is_chief,save_model_secs=30)
+		sess = sv.prepare_or_wait_for_session(server.target)
 		for i in range(1000):
-			if sess.should_stop(): break
+			if sv.should_stop(): break
 			sess.run(opt)
 			if i % 10 == 0:
 				r = sess.run(c)
 				print(r)
 			time.sleep(.1)
-		sess.close()
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()

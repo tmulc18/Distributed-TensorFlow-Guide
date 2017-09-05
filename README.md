@@ -11,13 +11,11 @@ The complete list of examples is below.  The asynchronous examples are *easier* 
 * `Non-Distributed Setup`
 * `Distributed Setup`
 * `HogWild` (Asychronous SGD)
+* `ADAG` (Asynchronous Distributed Adaptive Gradients) (TODO)
 * `Synchronous SGD`
-* `Synchronous SGD variables learning rates`
-* `ADAG` (Aggregated Distributed Asynchronous Gradients) (TODO)
-* `ADSG` (Aggregated Distributed Synchronous Gradients)
-* `Multiple-machine single-GPU`
-* `Single-machine multiple-GPU`
-* `Multiple-machine multiple-GPU`
+* `Synchronous SGD different learning rates`
+* `SDAG` (Synchronous Distributed Adaptive Gradients)
+* `Multiple GPUs Single Machine`
 * **Dynamic SGD (TODO)**
 * **Asynchronous Elastic Averaging SGD (AEASGD) (TODO)**
 * **Asynchronous Elastic Averaging Momentum SGD (AEAMSGD) (TODO)**
