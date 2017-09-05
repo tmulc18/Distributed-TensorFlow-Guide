@@ -48,7 +48,7 @@ def main():
 			base_lr = .0001
 			optimizer = tf.train.GradientDescentOptimizer(base_lr) #the learning rate set here is global
 
-			#local optimizers
+			#local optimizers and steps
 			optimizers=[]
 			local_steps = []
 			for w in range(n_workers):
@@ -82,7 +82,7 @@ def main():
 
 		#Monitored Training Session
 		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief,config=config,
-													scaffold=scaff,hooks=hooks,stop_grace_period_secs=10)
+													scaffold=scaff,hooks=hooks,save_checkpoint_secs=1,checkpoint_dir='logdir')
 
 		if is_chief:
 			time.sleep(5) #grace period to wait on other workers before starting training
@@ -98,7 +98,6 @@ def main():
 				for j in grad_list:
 					print(sess.run(j),FLAGS.task_index)
 
-			# if is_chief: time.sleep(1)
 			time.sleep(1)
 		print('Done',FLAGS.task_index)
 
