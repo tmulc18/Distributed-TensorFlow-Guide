@@ -1,5 +1,7 @@
 """
 Asynchronous updates with 1 parameter server and 2 workers.
+The updates happen 'hogwild' style so the parameters are 
+never locked.
 
 Author: Tommy Mulc
 """
