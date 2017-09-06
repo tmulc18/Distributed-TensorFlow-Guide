@@ -1,4 +1,5 @@
-# Distributed TensorFlow Examples
+# Distributed TensorFlow Guide 
+
 Currently, there are few examples of distributed TensorFlow code.  Further, the examples that do exist are often overwhelming because they don't focus on the basics of distributed computing, but rather with how to distribute an already complicated model.
 
 This is collection of examples for help getting started with distributed computing in TensorFlow and that can act as boilerplate code.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/).  The official Distributed TensorFlow guide can be found [here]( https://www.tensorflow.org/deploy/distributed).  
@@ -6,7 +7,7 @@ This is collection of examples for help getting started with distributed computi
 Almost all the examples can be run on a single machine with a CPU. 
 
 
-# Examples
+## Examples
 
 The complete list of examples is below.  The asynchronous examples are *easier* than the synchronous, so people getting started should first have a complete understanding of those before moving to synchronous examples.  The first example, `Non-Distributed Setup`, shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, `Distributed Setup` shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). 
 
@@ -22,7 +23,7 @@ The complete list of examples is below.  The asynchronous examples are *easier* 
 * Asynchronous Elastic Averaging SGD (AEASGD) **(TODO)**
 * Asynchronous Elastic Averaging Momentum SGD (AEAMSGD) **(TODO)**
 
-# Running Examples
+## Running Examples
 All the examples (except the non-distributed example) live in a folder.  To run them, move to the example directory and run the bash script.
 
 ```bash
@@ -36,18 +37,18 @@ In order to completely stop the example, you'll need to kill the python processe
 sudo pkill python
 ```
 
-# Requirements
+## Requirements
 
 * Python 2.7
 * TensorFlow >= 1.2
 
 
-# Links
+## Links
 * [Official Documenation](https://www.tensorflow.org/deploy/distributed)
 * [Threads and Queues](https://www.tensorflow.org/programmers_guide/threading_and_queues)
 * [More TensorFlow Documentation](https://www.tensorflow.org/api_guides/python/train#Distributed execution)
 
-# Glossary
+## Glossary
 * [Server](https://www.tensorflow.org/api_docs/python/tf/train/Server) -- encapsulates a Session and belongs to a cluster
 * [Coordinator](https://www.tensorflow.org/api_docs/python/tf/train/Coordinator) -- coordinates threads
 * [Session Manager](https://www.tensorflow.org/api_docs/python/tf/train/SessionManager) -- restores session and initialized variables and coordinates threads
