@@ -45,6 +45,7 @@ sudo pkill python
 # Links
 * [Official Documenation](https://www.tensorflow.org/deploy/distributed)
 * [Threads and Queues](https://www.tensorflow.org/programmers_guide/threading_and_queues)
+* [More TensorFlow Documentation](https://www.tensorflow.org/api_guides/python/train#Distributed execution)
 
 # Glossary
 * [Server](https://www.tensorflow.org/api_docs/python/tf/train/Server) -- encapsulates a Session and belongs to a cluster
