@@ -42,3 +42,20 @@ sudo pkill python
 * TensorFlow >= 1.2
 
 
+# Links
+* [Official Documenation](https://www.tensorflow.org/deploy/distributed)
+* [Threads and Queues](https://www.tensorflow.org/programmers_guide/threading_and_queues)
+
+# Glossary
+* [Server](https://www.tensorflow.org/api_docs/python/tf/train/Server) -- encapsulates a Session and belongs to a cluster
+* [Coordinator](https://www.tensorflow.org/api_docs/python/tf/train/Coordinator) -- coordinates threads
+* [Session Manager](https://www.tensorflow.org/api_docs/python/tf/train/SessionManager) -- restores session and initialized variables and coordinates threads
+* [Supervisor](https://www.tensorflow.org/api_docs/python/tf/train/Supervisor) -- good for threads. Coordinater, Saver, and Session Manager. > Session Manager
+* [Session Creator](https://www.tensorflow.org/api_docs/python/tf/train/SessionCreator) -- Factory for creating a session?
+* [Monitored Session](https://www.tensorflow.org/api_docs/python/tf/train/MonitoredSession) -- Session.  initialization, hooks, recovery.
+* [Monitored Training Session](https://www.tensorflow.org/api_docs/python/tf/train/MonitoredTrainingSession) -- only distributed solution for sync optimization
+* [Sync Replicas](https://www.tensorflow.org/api_docs/python/tf/train/SyncReplicasOptimizer) -- wrapper of optimizer for synchronous optimization
+* [Scaffold](https://www.tensorflow.org/api_docs/python/tf/train/Scaffold) -- holds lots of meta training settings and passed to session creator
+
+### Hooks
+* [Stop Hook](https://www.tensorflow.org/api_docs/python/tf/train/StopAtStepHook) -- Hook to request  stop training
