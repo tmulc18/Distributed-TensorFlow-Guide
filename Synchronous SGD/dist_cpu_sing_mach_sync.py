@@ -43,36 +43,20 @@ def main():
 			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=2,total_num_replicas=2)
 			
 			opt = optimizer1.minimize(loss,global_step=global_step) # averages gradients
-			#opt = optimizer1.minimize((2.)*loss,global_step=global_step) # hackily sums gradients
-
-			#chief_queue_runners = [optimizer1.get_chief_queue_runner()] #seems to work without it
-			init_tokens_op = optimizer1.get_init_tokens_op()
-
-
-			# Init ops
-			local_init=optimizer1.local_step_init_op #?
-			if is_chief:
-				local_init = optimizer1.chief_init_op #?
-			ready_for_local_init = optimizer1.ready_for_local_init_op #?
-			init = tf.global_variables_initializer() # must come after other init ops
 
 		# Session
 		sync_replicas_hook = optimizer1.make_session_run_hook(is_chief)
 		stop_hook = tf.train.StopAtStepHook(last_step=10)
-		chief_hooks = [sync_replicas_hook,stop_hook]
-		scaff = tf.train.Scaffold(init_op=init,local_init_op=local_init,
-									ready_for_local_init_op=ready_for_local_init)
+		hooks = [sync_replicas_hook,stop_hook]
 
 		#Monitored Training Session
-		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief,config=config,
-													scaffold=scaff,hooks=chief_hooks,stop_grace_period_secs=10)
-
-		if is_chief:
-			sess.run(init_tokens_op)
-			time.sleep(40) #grace period to wait on other workers before starting training
+		sess = tf.train.MonitoredTrainingSession(master = server.target, 
+                                             is_chief=is_chief,
+                                             config=config,
+                                             hooks=hooks,
+                                             stop_grace_period_secs=10)
 
 		print('Starting training on worker %d'%FLAGS.task_index)
-
 		while not sess.should_stop():
 			# if sess.should_stop(): print("should stopped"); break
 			_,r,gs=sess.run([opt,c,global_step])
