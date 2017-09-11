@@ -11,6 +11,7 @@ import time
 import os
 FLAGS = None
 log_dir = '/logdir'
+REPLICAS_TO_AGGREGATE = 2
 
 def main():
 	# Configure
@@ -40,9 +41,12 @@ def main():
 
 			# create an optimizer then wrap it with SynceReplicasOptimizer
 			optimizer = tf.train.GradientDescentOptimizer(.0001) #the learning rate set here is global
-			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=2,total_num_replicas=2)
+			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,
+                                                  replicas_to_aggregate=REPLICAS_TO_AGGREGATE,
+                                                  total_num_replicas=2)
 			
 			opt = optimizer1.minimize(loss,global_step=global_step) # averages gradients
+      #opt = optimizer1.minimize(REPLICAS_TO_AGGREGATE*loss,global_step=global_step) # hackily sums gradients
 
 		# Session
 		sync_replicas_hook = optimizer1.make_session_run_hook(is_chief)
@@ -85,7 +89,7 @@ if __name__ == '__main__':
     	default="",
     	help="One of 'ps', 'worker'"
     )
-    # Flags for defining the tf.train.Server
+  # Flags for defining the tf.train.Server
 	parser.add_argument(
     	"--task_index",
     	type=int,
