@@ -29,7 +29,7 @@ def main():
 		
 		# Graph
 		with tf.device(tf.train.replica_device_setter(ps_tasks=1\
-                ,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
+								,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
 
 			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
 			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
@@ -42,11 +42,10 @@ def main():
 			# create an optimizer then wrap it with SynceReplicasOptimizer
 			optimizer = tf.train.GradientDescentOptimizer(.0001) #the learning rate set here is global
 			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,
-                                                  replicas_to_aggregate=REPLICAS_TO_AGGREGATE,
-                                                  total_num_replicas=2)
+					replicas_to_aggregate=REPLICAS_TO_AGGREGATE, total_num_replicas=2)
 			
 			opt = optimizer1.minimize(loss,global_step=global_step) # averages gradients
-      #opt = optimizer1.minimize(REPLICAS_TO_AGGREGATE*loss,global_step=global_step) # hackily sums gradients
+			#opt = optimizer1.minimize(REPLICAS_TO_AGGREGATE*loss,global_step=global_step) # hackily sums gradients
 
 		# Session
 		sync_replicas_hook = optimizer1.make_session_run_hook(is_chief)
@@ -55,10 +54,10 @@ def main():
 
 		#Monitored Training Session
 		sess = tf.train.MonitoredTrainingSession(master = server.target, 
-                                             is_chief=is_chief,
-                                             config=config,
-                                             hooks=hooks,
-                                             stop_grace_period_secs=10)
+																						 is_chief=is_chief,
+																						 config=config,
+																						 hooks=hooks,
+																						 stop_grace_period_secs=10)
 
 		print('Starting training on worker %d'%FLAGS.task_index)
 		while not sess.should_stop():
@@ -72,7 +71,7 @@ def main():
 		print('Done',FLAGS.task_index)
 
 		# if is_chief:
-		# 	sess.run()
+		#   sess.run()
 		# Must stop threads first
 		time.sleep(10) #grace period to wait before closing session
 		sess.close()
@@ -84,18 +83,18 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	# Flags for defining the tf.train.ClusterSpec
 	parser.add_argument(
-    	"--job_name",
-    	type=str,
-    	default="",
-    	help="One of 'ps', 'worker'"
-    )
-  # Flags for defining the tf.train.Server
+			"--job_name",
+			type=str,
+			default="",
+			help="One of 'ps', 'worker'"
+		)
+	# Flags for defining the tf.train.Server
 	parser.add_argument(
-    	"--task_index",
-    	type=int,
-    	default=0,
-    	help="Index of task within the job"
-    )
+			"--task_index",
+			type=int,
+			default=0,
+			help="Index of task within the job"
+		)
 	FLAGS, unparsed = parser.parse_known_args()
 	print(FLAGS.task_index)
 	main()
