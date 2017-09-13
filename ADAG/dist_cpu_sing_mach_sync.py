@@ -17,7 +17,7 @@ def main():
 	# Configure
 	config=tf.ConfigProto(log_device_placement=False)
 
-	#Distributed Baggage
+	#Server Setup
 	cluster_spec = {'ps':['localhost:2222'],
 					'worker':['localhost:2223','localhost:2224']}
 	n_pss = len(cluster_spec['ps']) #the number of parameter servers
@@ -32,13 +32,21 @@ def main():
 		server = tf.train.Server(cluster,job_name="worker",task_index=FLAGS.task_index,config=config)
 		
 		# Graph
+		# We must not use train.replicate_device_setter for normal operations
+		# with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss\
+  #               ,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
 		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss\
-                ,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
+                ,worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 
-			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
-			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
+			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
+																	collections=[tf.GraphKeys.LOCAL_VARIABLES])
+			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
+																	collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			c=a+b
 
+			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='local_step',
+															 		collections=['local_non_trainable'])
+			#global step is tricky
 			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
 			loss = tf.reduce_mean(tf.square(c-target))
@@ -46,51 +54,63 @@ def main():
 			# all workers use the same learning rate and it is decided on by the task 0 
 			# or maybe the from the graph of the chief worker
 			base_lr = .0001
+			loptimizer = tf.train.GradientDescentOptimizer(base_lr)
 			optimizer = tf.train.GradientDescentOptimizer(base_lr) #the learning rate set here is global
 
+			#create global variables and/or references
+			local_to_global, global_to_local = create_global_variables()
+
 			#local optimizers and steps
-			optimizers=[]
-			local_steps = []
-			for w in range(n_workers):
-				local_steps.append(tf.Variable(0,dtype=tf.int32,trainable=False,name='local_step_%d'%w))
-				optimizers.append(tf.train.GradientDescentOptimizer(base_lr))
+			# actually only need one optimizer
+			# optimizers=[]
+			# local_steps = []
+			# for w in range(n_workers):
+			# 	local_steps.append(tf.Variable(0,dtype=tf.int32,trainable=False,name='local_step_%d'%w))
+			# 	optimizers.append(tf.train.GradientDescentOptimizer(base_lr))
 		
 			# ADAG (simplest case since all batches are the same)
-			update_window = 5 # T: update window, a.k.a number of gradients to use before sending to ps
+			update_window = 3 # T: update/communication window, a.k.a number of gradients to use before sending to ps
 			grad_list = [] # the array to store the gradients through the communication window
 			for t in range(update_window):
 				if t != 0:
 					with tf.control_dependencies([opt_local]):
-						grads, varss = zip(*optimizers[FLAGS.task_index].compute_gradients(loss)) #compute gradients using local optimizer
+						grads, varss = zip(*loptimizer.compute_gradients(loss,var_list=tf.local_variables())) #compute gradients
 				else:
-					grads, varss = zip(*optimizers[FLAGS.task_index].compute_gradients(loss)) #compute gradients using local optimizer
+					grads, varss = zip(*loptimizer.compute_gradients(loss,var_list=tf.local_variables())) #compute gradients only if the local opt was run
 				grad_list.append(grads) #add gradients to the list
-				opt_local = optimizers[FLAGS.task_index].apply_gradients(zip(grads,varss),
-										global_step=local_steps[FLAGS.task_index]) #update local parameters
+				opt_local = loptimizer.apply_gradients(zip(grads,varss),
+										global_step=local_step) #update local parameters
 			grads = tf.reduce_mean(grad_list,axis=0) #taking the mean is the same as dividing the sum of gradients by T
 			grads = tuple([grads[i]for i in range(len(varss))])
-			opt = optimizer.apply_gradients(zip(grads,varss),global_step=global_step) #apply the gradients globally
+			opt = optimizer.apply_gradients(
+														zip(grads,[ local_to_global[v] for v in varss])
+														,global_step=global_step) #apply the gradients to variables on ps
 
-			# Init op
-			init = tf.global_variables_initializer() # must come after other init ops
+			with tf.control_dependencies([opt]):
+				assign_locals = assign_global_to_local(global_to_local)
+
+			# Init ops
+			init_local = tf.variables_initializer(tf.local_variables()+tf.get_collection('local_non_trainable'))#tf.local_variables_initializer() #for local variables
+			init = tf.global_variables_initializer() # for global variables
+
+			# TODO: Add op the assigns local values to global ones for chief to execute
 
 
 		# Session
-		stop_hook = tf.train.StopAtStepHook(last_step=20)
+		stop_hook = tf.train.StopAtStepHook(last_step=40)
 		hooks = [stop_hook]
-		scaff = tf.train.Scaffold(init_op=init)
+		scaff = tf.train.Scaffold(init_op=init,local_init_op=init_local)
 
 		#Monitored Training Session
 		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief,config=config,
 													scaffold=scaff,hooks=hooks,save_checkpoint_secs=1,checkpoint_dir='logdir')
-
 		if is_chief:
-			time.sleep(5) #grace period to wait on other workers before starting training
+			time.sleep(10) #grace period to wait on other workers before starting training
 
 		# Train until hook stops session
 		print('Starting training on worker %d'%FLAGS.task_index)
 		while not sess.should_stop():
-			_,r,gs,ls = sess.run([opt,c,global_step,local_steps[FLAGS.task_index]])
+			_,_,r,gs,ls = sess.run([opt,assign_locals,c,global_step,local_step])
 
 			print(r,"global step: "+str(gs),"worker: "+str(FLAGS.task_index),"local step: "+str(ls))
 
@@ -106,6 +126,33 @@ def main():
 		sess.close()
 		print('Session from worker %d closed cleanly'%FLAGS.task_index)
 
+def assign_global_to_local(global_to_local):
+	for v in global_to_local.keys():
+		tf.assign(global_to_local[v],v)
+	return tf.no_op()
+
+def get_global_variable_by_name(name):
+	return [v for v in tf.global_variables() if v.name == name][0]
+
+def create_global_variables():
+	# TODO: swap static string with tf.train.replica_device_setter(ps_tasks=n_pss)
+	local_to_global = {}
+	global_to_local = {}
+	with tf.device('/job:ps/task:0'):
+		for v in tf.local_variables():
+			v_g = tf.get_variable('g/'+v.op.name,
+				shape = v.shape,
+				dtype = v.dtype,
+				trainable=True,
+				collections=[tf.GraphKeys.GLOBAL_VARIABLES,tf.GraphKeys.TRAINABLE_VARIABLES])
+			local_to_global[v] = v_g
+			global_to_local[v_g] = v
+	return local_to_global,global_to_local
+
+# TODO: initialize global ps variables 
+# according to the chiefs initial values
+def assign_global_values():
+	return None
 
 
 if __name__ == '__main__':
