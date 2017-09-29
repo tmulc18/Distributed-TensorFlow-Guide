@@ -59,12 +59,12 @@ def main():
 			# or maybe the from the graph of the chief worker
 			lr = .0001
 			loptimizer = tf.train.GradientDescentOptimizer(lr) #local optimizer
-			optimizer = tf.train.GradientDescentOptimizer(lr) #the learning rate set here is global
+			optimizer = tf.train.AdagradOptimizer(lr) #the learning rate set here is global
 
 			#create global variables and/or references
 			local_to_global, global_to_local = create_global_variables()
 		
-			# ADAG (simplest case since all batches are the same)
+			# DOWNPOUR
 			update_window = 3 # T: update/communication window, a.k.a number of gradients to use before sending to ps
 			grad_list = [] # the array to store the gradients through the communication window
 			for t in range(update_window):
@@ -82,7 +82,7 @@ def main():
 														zip(grads,[ local_to_global[v] for v in varss])
 														,global_step=global_step) #apply the gradients to variables on ps
 
-			# Pull paramd from global server
+			# Pull params from global server
 			with tf.control_dependencies([opt]):
 				assign_locals = assign_global_to_local(global_to_local)
 
@@ -98,7 +98,7 @@ def main():
 
 
 		# Session
-		stop_hook = tf.train.StopAtStepHook(last_step=40)
+		stop_hook = tf.train.StopAtStepHook(last_step=60)
 		hooks = [stop_hook]
 		scaff = tf.train.Scaffold(init_op=init,local_init_op=init_local)
 
@@ -117,11 +117,7 @@ def main():
 
 			print(r,"global step: "+str(gs),"worker: "+str(FLAGS.task_index),"local step: "+str(ls))
 
-			if gs % 7 == 1:
-				for j in grad_list:
-					print(sess.run(j),FLAGS.task_index)
-
-			time.sleep(1)
+			time.sleep(1) # so we can observe training
 		print('Done',FLAGS.task_index)
 
 		# Must stop threads first
