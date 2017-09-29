@@ -34,16 +34,17 @@ def main():
 		# Graph
 		# We must not use train.replicate_device_setter for normal operations
 		# with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss\
-  #               ,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
-		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss\
-                ,worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
+  #               ,worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 
+		#Local operations
+		with tf.device("/job:worker/replica:0/task:%d" % FLAGS.task_index):
 			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
 																	collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
 																	collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			c=a+b
-
+		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss\
+                 ,worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='local_step',
 															 		collections=['local_non_trainable'])
 			#global step is tricky
@@ -54,19 +55,11 @@ def main():
 			# all workers use the same learning rate and it is decided on by the task 0 
 			# or maybe the from the graph of the chief worker
 			base_lr = .0001
-			loptimizer = tf.train.GradientDescentOptimizer(base_lr)
+			loptimizer = tf.train.GradientDescentOptimizer(base_lr) #local optimizer
 			optimizer = tf.train.GradientDescentOptimizer(base_lr) #the learning rate set here is global
 
 			#create global variables and/or references
 			local_to_global, global_to_local = create_global_variables()
-
-			#local optimizers and steps
-			# actually only need one optimizer
-			# optimizers=[]
-			# local_steps = []
-			# for w in range(n_workers):
-			# 	local_steps.append(tf.Variable(0,dtype=tf.int32,trainable=False,name='local_step_%d'%w))
-			# 	optimizers.append(tf.train.GradientDescentOptimizer(base_lr))
 		
 			# ADAG (simplest case since all batches are the same)
 			update_window = 3 # T: update/communication window, a.k.a number of gradients to use before sending to ps
@@ -86,6 +79,7 @@ def main():
 														zip(grads,[ local_to_global[v] for v in varss])
 														,global_step=global_step) #apply the gradients to variables on ps
 
+			# Push to global server
 			with tf.control_dependencies([opt]):
 				assign_locals = assign_global_to_local(global_to_local)
 
@@ -93,7 +87,12 @@ def main():
 			init_local = tf.variables_initializer(tf.local_variables()+tf.get_collection('local_non_trainable'))#tf.local_variables_initializer() #for local variables
 			init = tf.global_variables_initializer() # for global variables
 
+			# TODO: Grab global state before training so all workers have same initialization
+			grab_global_init = assign_global_to_local(global_to_local)
+
 			# TODO: Add op the assigns local values to global ones for chief to execute
+			assign_global = assign_local_to_global(local_to_global)
+
 
 
 		# Session
@@ -105,10 +104,12 @@ def main():
 		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief,config=config,
 													scaffold=scaff,hooks=hooks,save_checkpoint_secs=1,checkpoint_dir='logdir')
 		if is_chief:
+			sess.run(assign_global) #TODO #assigns chiefs initial values to ps
 			time.sleep(10) #grace period to wait on other workers before starting training
 
 		# Train until hook stops session
 		print('Starting training on worker %d'%FLAGS.task_index)
+		sess.run(grab_global_init)
 		while not sess.should_stop():
 			_,_,r,gs,ls = sess.run([opt,assign_locals,c,global_step,local_step])
 
@@ -127,14 +128,40 @@ def main():
 		print('Session from worker %d closed cleanly'%FLAGS.task_index)
 
 def assign_global_to_local(global_to_local):
+	"""
+	global_to_local : dictionary with corresponding local variable for global key
+
+	Assigns global variable value to local variables
+	"""
 	for v in global_to_local.keys():
 		tf.assign(global_to_local[v],v)
 	return tf.no_op()
 
+def assign_local_to_global(local_to_global):
+	"""
+	local_to_global : dictionary with corresponding global variable for local key
+
+	Assigns global variable value to local variables
+	"""
+	for v in local_to_global.keys():
+		tf.assign(local_to_global[v],v)
+	return tf.no_op()
+
 def get_global_variable_by_name(name):
+	"""
+	name : the name of the global variable
+
+	Returns the global variable of given name
+	"""
 	return [v for v in tf.global_variables() if v.name == name][0]
 
 def create_global_variables():
+	"""
+	Creates global variables for local variables on the graph.
+
+	Returns dictionarys for local-to-global and global-to-local
+	variable mappings.
+	"""
 	# TODO: swap static string with tf.train.replica_device_setter(ps_tasks=n_pss)
 	local_to_global = {}
 	global_to_local = {}
@@ -149,10 +176,10 @@ def create_global_variables():
 			global_to_local[v_g] = v
 	return local_to_global,global_to_local
 
-# TODO: initialize global ps variables 
-# according to the chiefs initial values
-def assign_global_values():
-	return None
+# # TODO: initialize global ps variables 
+# # according to the chiefs initial values
+# def assign_global_values():
+# 	return None
 
 
 if __name__ == '__main__':
