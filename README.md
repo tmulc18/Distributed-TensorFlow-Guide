@@ -1,10 +1,13 @@
 # Distributed TensorFlow Guide 
-
+ 
 Currently, there are few examples of distributed TensorFlow code.  Further, the examples that do exist are often overwhelming because they don't focus on the basics of distributed computing, but rather with how to distribute an already complicated model.
+
 
 This is collection of examples for help getting started with distributed computing in TensorFlow and that can act as boilerplate code.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/).  The official Distributed TensorFlow guide can be found [here]( https://www.tensorflow.org/deploy/distributed).  
 
-Almost all the examples can be run on a single machine with a CPU.
+<img src="imgs/data-parallelism.png" width=75%>
+
+Almost all the examples can be run on a single machine with a CPU and all the examples only use data-parallelism (i.e. between-graph replication).
 
 ## Beginner Tutorial
 
@@ -15,14 +18,14 @@ See the Beginner Tutorial folder for notebooks demonstrating core concepts used 
 * `Local then Global Variable.ipynb` -- creates a graph locally then make global copies of the variables.  Useful for graphs that do local updates before pushing global updates (e.g. DOWNPOUR, ADAG, etc.)
 
 
-## Training Examples
+## Training Algorithm Examples
 
-The complete list of examples is below.  The asynchronous examples are *easier* than the synchronous, so people getting started should first have a complete understanding of those before moving to synchronous examples.  The first example, `Non-Distributed Setup`, shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, `Distributed Setup` shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). 
+The complete list of examples is below. The first example, `Non-Distributed Setup`, shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, `Distributed Setup` shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). 
 
 * `Non-Distributed Setup`
 * `Distributed Setup`
 * `HogWild` (Asychronous SGD)
-* `DOWNPOUR` **TODO**
+* `DOWNPOUR` **WIP**
 * `ADAG` (Asynchronous Distributed Adaptive Gradients) **WIP**
 * `Synchronous SGD`
 * `Synchronous SGD different learning rates`
@@ -32,7 +35,7 @@ The complete list of examples is below.  The asynchronous examples are *easier* 
 * Asynchronous Elastic Averaging SGD (AEASGD) **TODO**
 * Asynchronous Elastic Averaging Momentum SGD (AEAMSGD) **TODO**
 
-## Running Training Examples
+## Running Training Algorithm Examples
 All the training examples (except the non-distributed example) live in a folder.  To run them, move to the example directory and run the bash script.
 
 ```bash
@@ -70,3 +73,10 @@ sudo pkill python
 
 ### Hooks
 * [Stop Hook](https://www.tensorflow.org/api_docs/python/tf/train/StopAtStepHook) -- Hook to request  stop training
+
+## Algorithm References
+
+* [Hogwild!](https://people.eecs.berkeley.edu/~brecht/papers/hogwildTR.pdf)
+* [DOWNPOUR](https://static.googleusercontent.com/media/research.google.com/en//archive/large_deep_networks_nips2012.pdf)
+* [ADAG](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/)
+* [EASGD and EAMSGD](https://arxiv.org/abs/1412.6651)
