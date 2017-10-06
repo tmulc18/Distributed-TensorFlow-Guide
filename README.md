@@ -3,9 +3,11 @@
 Currently, there are few examples of distributed TensorFlow code.  Further, the examples that do exist are often overwhelming because they don't focus on the basics of distributed computing, but rather with how to distribute an already complicated model.
 
 
-This is collection of examples for help getting started with distributed computing in TensorFlow and that can act as boilerplate code.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/).  The official Distributed TensorFlow guide can be found [here]( https://www.tensorflow.org/deploy/distributed).  
-
+This is collection of examples for help getting started with distributed computing in TensorFlow and that can act as boilerplate code.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/).  The official Distributed TensorFlow guide can be found [here]( https://www.tensorflow.org/deploy/distributed). 
+ 
+<div align="center">
 <img src="imgs/data-parallelism.png" width=50%>
+<div/>
 
 Almost all the examples can be run on a single machine with a CPU and all the examples only use data-parallelism (i.e. between-graph replication).
 

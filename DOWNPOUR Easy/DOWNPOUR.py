@@ -1,6 +1,8 @@
 """
 DOWNPOUR
-Performs asynchronous updates with update window
+
+Performs asynchronous updates with update window.
+Uses SGD on the local level for updates instead of Adagrad.
 
 Author: Tommy Mulc
 """
@@ -46,8 +48,7 @@ def main():
 
 			lr = .0001
 			
-			#loptimizer = tf.train.GradientDescentOptimizer(lr*FLAGS.task_index) #local optimizer
-			loptimizer = tf.train.AdagradOptimizer(lr) #local optimizer
+			loptimizer = tf.train.GradientDescentOptimizer(lr*FLAGS.task_index) #local optimizer
 
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
 			loss = tf.reduce_mean(tf.square(c-target))
@@ -68,13 +69,7 @@ def main():
 			grads = tf.reduce_sum(grad_list,axis=0) #sum updates before applying globally
 			grads = tuple([grads[i]for i in range(len(varss))])
 
-			# add these variables created by local optimizer
-			# to the local collection
-			lopt_vars = add_global_variables_to_local_collection()
-
-			# del the variables from the global collection
-			clear_global_collection()
-
+			
 		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss\
                  ,worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 
@@ -86,7 +81,7 @@ def main():
 			optimizer = tf.train.AdagradOptimizer(lr) #global optimizer
 
 			#create global variables and/or references
-			local_to_global, global_to_local = create_global_variables(lopt_vars)
+			local_to_global, global_to_local = create_global_variables()
 			opt = optimizer.apply_gradients(
 														zip(grads,[local_to_global[v] for v in varss])
 														,global_step=global_step) #apply the gradients to variables on ps
@@ -94,6 +89,7 @@ def main():
 			# Pull params from global server
 			with tf.control_dependencies([opt]):
 				assign_locals = assign_global_to_local(global_to_local)
+
 
 			# Grab global state before training so all workers have same initialization
 			grab_global_init = assign_global_to_local(global_to_local)
@@ -103,6 +99,7 @@ def main():
 
 			# Init ops
 			init = tf.global_variables_initializer() # for global variables
+			# init = tf.variables_initializer(tf.global_variables()+[local_beta1,local_beta2,local_adam11,local_adam10,local_adam00,local_adam01])
 			init_local = tf.variables_initializer(tf.local_variables()+tf.get_collection('local_non_trainable'))#tf.local_variables_initializer() #for local variables
 
 		# Session
@@ -113,7 +110,7 @@ def main():
 		#Monitored Training Session
 		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief,config=config,
 													scaffold=scaff,hooks=hooks,save_checkpoint_secs=1,checkpoint_dir='logdir')
-		
+
 		if is_chief:
 			sess.run(assign_global) #Assigns chief's initial values to ps
 			time.sleep(10) #grace period to wait on other workers before starting training
@@ -177,11 +174,9 @@ def get_global_variable_by_name(name):
 	# return [v for v in tf.variables() if v.name == name][0]
 	return [v for v in tf.global_variables() if v.name == name][0]
 
-def create_global_variables(local_optimizer_vars = []):
+def create_global_variables():
 	"""
 	Creates global variables for local variables on the graph.
-	Skips variables local variables that are created for
-	local optimization.
 
 	Returns dictionarys for local-to-global and global-to-local
 	variable mappings.
@@ -191,37 +186,15 @@ def create_global_variables(local_optimizer_vars = []):
 	global_to_local = {}
 	with tf.device('/job:ps/task:0'):
 		for v in tf.local_variables():
-			if v not in local_optimizer_vars:
-				v_g = tf.get_variable('g/'+v.op.name,
-					shape = v.shape,
-					dtype = v.dtype,
-					trainable=True,
-					collections=[tf.GraphKeys.GLOBAL_VARIABLES, \
-											tf.GraphKeys.TRAINABLE_VARIABLES])
-				local_to_global[v] = v_g
-				global_to_local[v_g] = v
+			v_g = tf.get_variable('g/'+v.op.name,
+				shape = v.shape,
+				dtype = v.dtype,
+				trainable=True,
+				collections=[tf.GraphKeys.GLOBAL_VARIABLES,tf.GraphKeys.TRAINABLE_VARIABLES])
+			local_to_global[v] = v_g
+			global_to_local[v_g] = v
 	return local_to_global,global_to_local
 
-def add_global_variables_to_local_collection():
-	"""
-	Adds all variables from the global collection
-	to the local collection
-
-	Returns the list of variables added
-	"""
-	r =[]
-	for var in tf.get_default_graph()._collections[tf.GraphKeys.GLOBAL_VARIABLES]:
-		tf.add_to_collection(tf.GraphKeys.LOCAL_VARIABLES,var)
-		r.append(var)
-	return r
-
-def clear_global_collection():
-	"""
-	Removes all variables from global collection
-	"""
-	g = tf.get_default_graph()
-	for _ in range(len(g._collections[tf.GraphKeys.GLOBAL_VARIABLES])):
-		del g._collections[tf.GraphKeys.GLOBAL_VARIABLES][0]
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
