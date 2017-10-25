@@ -42,7 +42,7 @@ The complete list of examples is below. The first example, `Non-Distributed-Setu
 * `Asynchronous Elastic Averaging Momentum SGD` (AEAMSGD) **TODO**
 
 
-<sup>1</sup>The DOWNPOUR Easy example is the same as the DOWNPOUR example except that is uses SGD on the workers instead of Adagrad.
+<sup>1</sup>This is the same as the DOWNPOUR example except that is uses SGD on the workers instead of Adagrad.
 
 ## Running Training Algorithm Examples
 All the training examples (except the non-distributed example) live in a folder.  To run them, move to the example directory and run the bash script.
