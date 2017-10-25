@@ -1,7 +1,7 @@
 # The Distributed TensorFlow Handbook 
  
 
-This handbook is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of distributed computations in TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/). 
+This handbook is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of basic distributed TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/). 
  
 <div align="center">
 <img src="imgs/data-parallelism.png" width=50%>
@@ -13,9 +13,9 @@ The motivation for this guide stems from the current state of distributed deep l
 
 The aim of this guide is to aid all interesting in distributed deep learning, from beginners to researchers.
 
-## Beginner Tutorial
+## Basics Tutorial
 
-See the Beginner Tutorial folder for notebooks demonstrating core concepts used in distributed TensorFlow.  The rest of the examples assume understanding of the beginner tutorial.
+See the Basics Tutorial folder for notebooks demonstrating core concepts used in distributed TensorFlow.  The rest of the examples assume understanding of the basics tutorial.
 
 * `Servers.ipynb` -- basics of TensorFlow servers
 * `Parameter Sever.ipynb` -- everything about parameter servers
