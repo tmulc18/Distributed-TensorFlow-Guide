@@ -7,7 +7,7 @@ This is collection of examples for help getting started with distributed computi
  
 <div align="center">
 <img src="imgs/data-parallelism.png" width=50%>
-<div/>
+</div>
 
 Almost all the examples can be run on a single machine with a CPU and all the examples only use data-parallelism (i.e. between-graph replication).
 
@@ -17,7 +17,8 @@ See the Beginner Tutorial folder for notebooks demonstrating core concepts used 
 
 * `Servers.ipynb` -- basics of TensorFlow servers
 * `Parameter Sever.ipynb` -- everything about parameter servers
-* `Local then Global Variable.ipynb` -- creates a graph locally then make global copies of the variables.  Useful for graphs that do local updates before pushing global updates (e.g. DOWNPOUR, ADAG, etc.)
+* `Local then Global Variable.ipynb` -- creates a graph locally then make global copies of the variables Useful for graphs that do local updates before pushing global updates (e.g. DOWNPOUR, ADAG, etc.)
+* `Multiple-Workers` -- contains three notebooks: one parameter server notebook and two worker notebooks  The exercise shows how global variables are communicated via the parameter server and how local updates can be made by explicitly placing ops on local devices
 
 
 ## Training Algorithm Examples
@@ -27,15 +28,15 @@ The complete list of examples is below. The first example, `Non-Distributed Setu
 * `Non-Distributed Setup`
 * `Distributed Setup`
 * `HogWild` (Asychronous SGD)
-* `DOWNPOUR` **WIP**
-* `ADAG` (Asynchronous Distributed Adaptive Gradients) **WIP**
+* `DOWNPOUR`
+* `ADAG` (Asynchronous Distributed Adaptive Gradients)
 * `Synchronous SGD`
 * `Synchronous SGD different learning rates`
 * `SDAG` (Synchronous Distributed Adaptive Gradients) **WIP**
 * `Multiple GPUs Single Machine`
-* Dynamic SGD **TODO**
-* Asynchronous Elastic Averaging SGD (AEASGD) **TODO**
-* Asynchronous Elastic Averaging Momentum SGD (AEAMSGD) **TODO**
+* `Dynamic SGD` **TODO**
+* `Asynchronous Elastic Averaging SGD` (AEASGD) **TODO**
+* `Asynchronous Elastic Averaging Momentum SGD` (AEAMSGD) **TODO**
 
 ## Running Training Algorithm Examples
 All the training examples (except the non-distributed example) live in a folder.  To run them, move to the example directory and run the bash script.
