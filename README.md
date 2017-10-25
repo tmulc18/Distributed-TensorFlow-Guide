@@ -1,15 +1,17 @@
 # The Distributed TensorFlow Handbook 
  
 
-This handbook is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of distributed computations in TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/).  The official Distributed TensorFlow guide can be found [here]( https://www.tensorflow.org/deploy/distributed). 
+This handbook is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of distributed computations in TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/). 
  
 <div align="center">
 <img src="imgs/data-parallelism.png" width=50%>
 </div>
 
-Almost all the examples can be run on a single machine with a CPU and all the examples only use data-parallelism (i.e. between-graph replication).
+Almost all the examples can be run on a single machine with a CPU, and all the examples only use data-parallelism (i.e. between-graph replication).
 
-The motivation for this guide stems from the current state of distributed deep learning.  Deep learning papers typical demonstrate successful new architectures on some benchmark, but rarely show how these models can be trained with 1000x the data which is usually the requirement in industy.  Furthermore, most successful distributed cases use state-of-the-art hardware to run massive effective minibatches in a *synchronous* fashion across high-bandwidth networks; there has been little research showing the potention of asynchronous training (which is why there are a lot of those examples in this guide).  Finally, the lack of documenation for distributed TF was the real reason this project was started.  TF is a great tool that prides itself on its scalability, but unfortunately there are few examples that show how to make your model scale with datasize.
+The motivation for this guide stems from the current state of distributed deep learning.  Deep learning papers typical demonstrate successful new architectures on some benchmark, but rarely show how these models can be trained with 1000x the data which is usually the requirement in industy.  Furthermore, most successful distributed cases use state-of-the-art hardware to bruteforce massive effective minibatches in a *synchronous* fashion across high-bandwidth networks; there has been little research showing the potention of asynchronous training (which is why there are a lot of those examples in this guide).  Finally, the lack of documenation for distributed TF was the real reason this project was started.  TF is a great tool that prides itself on its scalability, but unfortunately there are few examples that show how to make your model scale with datasize.  
+
+The aim of this guide is to aid all interesting in distributed deep learning, from beginners to researchers.
 
 ## Beginner Tutorial
 
@@ -23,12 +25,13 @@ See the Beginner Tutorial folder for notebooks demonstrating core concepts used 
 
 ## Training Algorithm Examples
 
-The complete list of examples is below. The first example, `Non-Distributed Setup`, shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, `Distributed Setup` shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). 
+The complete list of examples is below. The first example, `Non-Distributed Setup`, shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, `Distributed Setup` shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). The remaining examples are a mix a synchronous and non-synchronous training schemes.
 
 * `Non-Distributed Setup`
 * `Distributed Setup`
 * `HogWild` (Asychronous SGD)
 * `DOWNPOUR`
+* `DOWNPOUR Easy`<sup>1</sup>
 * `ADAG` (Asynchronous Distributed Adaptive Gradients)
 * `Synchronous SGD`
 * `Synchronous SGD different learning rates`
@@ -37,6 +40,9 @@ The complete list of examples is below. The first example, `Non-Distributed Setu
 * `Dynamic SGD` **TODO**
 * `Asynchronous Elastic Averaging SGD` (AEASGD) **TODO**
 * `Asynchronous Elastic Averaging Momentum SGD` (AEAMSGD) **TODO**
+
+
+<sup>1</sup>The DOWNPOUR Easy example is the same as the DOWNPOUR example except that is uses SGD on the workers instead of Adagrad.
 
 ## Running Training Algorithm Examples
 All the training examples (except the non-distributed example) live in a folder.  To run them, move to the example directory and run the bash script.
@@ -75,13 +81,12 @@ sudo pkill python
 * [Scaffold](https://www.tensorflow.org/api_docs/python/tf/train/Scaffold) -- holds lots of meta training settings and passed to Session creator
 
 ### Hooks
-* [SessionRunHook](https://www.tensorflow.org/api_docs/python/tf/train/SessionRunHook) -- calls begin, end methods
-* [LoggingTensorHook](https://www.tensorflow.org/api_docs/python/tf/train/LoggingTensorHook) -- prints tensors every N steps or seconds
+* [LoggingTensorHook](https://www.tensorflow.org/api_docs/python/tf/train/LoggingTensorHook) -- prints tensors every *N* steps or seconds
 * [StopAtStepHook](https://www.tensorflow.org/api_docs/python/tf/train/StopAtStepHook) -- requests to stop training at a certain step
 * [StepCounterHook](https://www.tensorflow.org/api_docs/python/tf/train/StepCounterHook) -- counts steps per second
-* [CheckpointSaverHook](https://www.tensorflow.org/api_docs/python/tf/train/CheckpointSaverHook) -- saves new checkpoint every N steps or seconds
+* [CheckpointSaverHook](https://www.tensorflow.org/api_docs/python/tf/train/CheckpointSaverHook) -- saves new checkpoint every *N* steps or seconds
 * [NanTensorHook](https://www.tensorflow.org/api_docs/python/tf/train/NanTensorHook) -- stops training if loss is NaN
-* [SummarySaverHook](https://www.tensorflow.org/api_docs/python/tf/train/SummarySaverHook) -- saves summaries every N steps or seconds
+* [SummarySaverHook](https://www.tensorflow.org/api_docs/python/tf/train/SummarySaverHook) -- saves summaries every *N* steps or seconds
 * [GlobalStepWaiterHook](https://www.tensorflow.org/api_docs/python/tf/train/GlobalStepWaiterHook) -- waits until global step reaches threshold before training
 * [FinalOpsHook](https://www.tensorflow.org/api_docs/python/tf/train/FinalOpsHook) -- runs specified ops before closing session
 * [FeedFnHook](https://www.tensorflow.org/api_docs/python/tf/train/FeedFnHook) -- assigns feed_dict
