@@ -16,7 +16,7 @@ def main():
 	# Configure
 	config=tf.ConfigProto(log_device_placement=False)
 
-	#Distributed Baggage
+	# Server Setup
 	cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
 										'worker':['localhost:2223','localhost:2224']}) #allows this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
@@ -57,11 +57,11 @@ def main():
 			# Init ops
 			init_tokens_op = optimizer1.get_init_tokens_op()
 
-			local_init=optimizer1.local_step_init_op #?
+			local_init=optimizer1.local_step_init_op # initialize local step
 			if is_chief:
-				local_init = optimizer1.chief_init_op #?
+				local_init = optimizer1.chief_init_op # initializes token queue
 
-			ready_for_local_init = optimizer1.ready_for_local_init_op #?
+			ready_for_local_init = optimizer1.ready_for_local_init_op # checks if global vars are init
 			init = tf.global_variables_initializer() # must come after other init ops
 
 		# Session
@@ -84,9 +84,9 @@ def main():
 		while not sess.should_stop():
 			_,r,gs=sess.run([opt,c,global_step])
 
-			print(r,gs,FLAGS.task_index)
+			print(r,'step: ',gs,'worker: ',FLAGS.task_index)
 
-			if is_chief: print(r,gs,FLAGS.task_index); time.sleep(1)
+			if is_chief: time.sleep(1)
 			time.sleep(1)
 		print('Done',FLAGS.task_index)
 

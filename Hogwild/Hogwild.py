@@ -15,7 +15,7 @@ FLAGS = None
 log_dir = '/logdir'
 
 def main():
-	#Distributed Baggage
+	# Server Setup
 	cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
 										'worker':['localhost:2223','localhost:2224']}) #lets this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
@@ -24,7 +24,8 @@ def main():
 	else:
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
 		server = tf.train.Server(cluster,job_name="worker",task_index=FLAGS.task_index)
-		# Graph
+		
+    # Graph
 		with tf.device('/cpu:0'):
 			a = tf.Variable(tf.truncated_normal(shape=[2]),dtype=tf.float32)
 			b = tf.Variable(tf.truncated_normal(shape=[2]),dtype=tf.float32)

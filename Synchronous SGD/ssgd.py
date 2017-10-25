@@ -17,7 +17,7 @@ def main():
   # Configure
   config=tf.ConfigProto(log_device_placement=False)
 
-  #Distributed Baggage
+  # Server Setup
   cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
                     'worker':['localhost:2223','localhost:2224']}) #allows this node know about all other nodes
   if FLAGS.job_name == 'ps': #checks if parameter server
@@ -64,19 +64,15 @@ def main():
       # if sess.should_stop(): print("should stopped"); break
       _,r,gs=sess.run([opt,c,global_step])
 
-      print(r,gs,FLAGS.task_index)
+      print(r,'step: ',gs,'worker: ',FLAGS.task_index)
 
-      if is_chief: print(r,gs,FLAGS.task_index); time.sleep(1)
+      if is_chief: time.sleep(1)
       time.sleep(1)
     print('Done',FLAGS.task_index)
 
-    # if is_chief:
-    #   sess.run()
-    # Must stop threads first
     time.sleep(10) #grace period to wait before closing session
     sess.close()
     print('Session from worker %d closed cleanly'%FLAGS.task_index)
-
 
 
 if __name__ == '__main__':

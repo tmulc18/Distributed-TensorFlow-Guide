@@ -33,10 +33,7 @@ def main():
 		
 		# Graph
 		# We must not use train.replicate_device_setter for normal operations
-		# with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss\
-  #               ,worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
-
-		#Local operations
+		# Local operations
 		with tf.device("/job:worker/replica:0/task:%d" % FLAGS.task_index):
 			# with tf.variable_scope('worker%d'%FLAGS.task_index):
 			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,

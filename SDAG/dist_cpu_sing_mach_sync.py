@@ -17,7 +17,7 @@ def main():
 	# Configure
 	config=tf.ConfigProto(log_device_placement=False)
 
-	#Distributed Baggage
+	# Server Setup
 	cluster_spec = {'ps':['localhost:2222'],
 					'worker':['localhost:2223','localhost:2224']}
 	n_workers = len(cluster_spec['worker']) #the number of worker nodes

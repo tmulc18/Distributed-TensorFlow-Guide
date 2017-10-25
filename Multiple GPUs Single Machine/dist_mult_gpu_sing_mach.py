@@ -13,23 +13,16 @@ FLAGS = None
 log_dir = '/logdir'
 
 def main():
-	#Distributed Baggage
-	#with tf.device('/cpu:0'):
+    # Server Setup
     cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
                                         'worker':['localhost:2223','localhost:2224']}) #lets this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
-		#gpu_options = tf.GPUOptions(allow_growth=True,allocator_type="BFC",visible_device_list="%d"%FLAGS.task_index)
-		#gpu_options = tf.GPUOptions(allow_growth=True,allocator_type="BFC",visible_device_list="0")
-		#config = tf.ConfigProto(allow_soft_placement=True,device_count={'GPU':1},log_device_placement=True,gpu_options=gpu_options)
 		with tf.device('/cpu:0'):
 			server = tf.train.Server(cluster,job_name="ps",task_index=FLAGS.task_index)
 			server.join()
 	else:
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
-		gpu_options = tf.GPUOptions(allow_growth=True,allocator_type="BFC",visible_device_list="")
-                config = tf.ConfigProto(allow_soft_placement=True,device_count={'GPU':0})
-		with tf.device('/cpu:0'):	
-			server = tf.train.Server(cluster,job_name="worker",
+		server = tf.train.Server(cluster,job_name="worker",
 						task_index=FLAGS.task_index,config=config)
 		# Graph
 		with tf.device('/gpu:0'):
