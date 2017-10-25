@@ -15,7 +15,7 @@ The aim of this guide is to aid all interesting in distributed deep learning, fr
 
 ## Basics Tutorial
 
-See the Basics Tutorial folder for notebooks demonstrating core concepts used in distributed TensorFlow.  The rest of the examples assume understanding of the basics tutorial.
+See the Basics-Tutorial folder for notebooks demonstrating core concepts used in distributed TensorFlow.  The rest of the examples assume understanding of the basics tutorial.
 
 * `Servers.ipynb` -- basics of TensorFlow servers
 * `Parameter Sever.ipynb` -- everything about parameter servers
@@ -25,18 +25,18 @@ See the Basics Tutorial folder for notebooks demonstrating core concepts used in
 
 ## Training Algorithm Examples
 
-The complete list of examples is below. The first example, `Non-Distributed Setup`, shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, `Distributed Setup` shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). The remaining examples are a mix a synchronous and non-synchronous training schemes.
+The complete list of examples is below. The first example, `Non-Distributed-Setup`, shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, `Distributed-Setup` shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). The remaining examples are a mix a synchronous and non-synchronous training schemes.
 
 * `Non-Distributed Setup`
-* `Distributed Setup`
+* `Distributed-Setup`
 * `HogWild` (Asychronous SGD)
 * `DOWNPOUR`
-* `DOWNPOUR Easy`<sup>1</sup>
+* `DOWNPOUR-Easy`<sup>1</sup>
 * `ADAG` (Asynchronous Distributed Adaptive Gradients)
-* `Synchronous SGD`
-* `Synchronous SGD different learning rates`
+* `Synchronous-SGD`
+* `Synchronous-SGD-different-learning-rates`
 * `SDAG` (Synchronous Distributed Adaptive Gradients) **WIP**
-* `Multiple GPUs Single Machine`
+* `Multiple-GPUs-Single-Machine`
 * `Dynamic SGD` **TODO**
 * `Asynchronous Elastic Averaging SGD` (AEASGD) **TODO**
 * `Asynchronous Elastic Averaging Momentum SGD` (AEAMSGD) **TODO**
