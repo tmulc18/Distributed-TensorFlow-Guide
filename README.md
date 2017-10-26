@@ -1,7 +1,7 @@
-# The Distributed TensorFlow Handbook 
+# Distributed TensorFlow Guide
  
 
-This handbook is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of basic distributed TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/). 
+This guide is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of basic distributed TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/). 
  
 <div align="center">
 <img src="imgs/data-parallelism.png" width=50%>
