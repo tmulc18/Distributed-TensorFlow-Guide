@@ -27,32 +27,32 @@ def main():
 
 	if FLAGS.job_name == 'ps': #checks if parameter server
 		server = tf.train.Server(cluster,
-				job_name="ps",
-				task_index=FLAGS.task_index,
-				config=config)
+					job_name="ps",
+					task_index=FLAGS.task_index,
+					config=config)
 		server.join()
 	else: #it must be a worker server
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
 		server = tf.train.Server(cluster,
-				job_name="worker",
-				task_index=FLAGS.task_index,
-				config=config)
+					job_name="worker",
+					task_index=FLAGS.task_index,
+					config=config)
 		
 		# Graph
 		# We must not use train.replicate_device_setter for normal operations
 		# Local operations
 		with tf.device("/job:worker/replica:0/task:%d" % FLAGS.task_index):
 			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
-					collections=[tf.GraphKeys.LOCAL_VARIABLES])
+						collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
-					collections=[tf.GraphKeys.LOCAL_VARIABLES])
+						collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			c=a+b
 			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,
-					name='local_step',collections=['local_non_trainable'])
+						name='local_step',collections=['local_non_trainable'])
 
 		with tf.device(tf.train.replica_device_setter(
-				ps_tasks=n_pss, \
-        worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
+					ps_tasks=n_pss,
+        	worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
 			loss = tf.reduce_mean(tf.square(c-target))
@@ -79,7 +79,7 @@ def main():
 							var_list=tf.local_variables())) 
 				grad_list.append(grads) #add gradients to the list
 				opt_local = loptimizer.apply_gradients(zip(grads,varss),
-										global_step=local_step) #update local parameters
+							global_step=local_step) #update local parameters
 			grads = tf.reduce_mean(grad_list,axis=0)
 			grads = tuple([grads[i]for i in range(len(varss))])
 			opt = optimizer.apply_gradients(
