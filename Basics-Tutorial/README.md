@@ -1,6 +1,6 @@
 ## Basics Tutorial
 
-This short tutorial will show you how to get started with distributed TensorFlow.  The aim is to get you familiar with basic distributed TF concepts that are reoccuring, such as TF servers.  You should work throught the content in the following order 
+This short tutorial will show you how to get started with distributed TensorFlow.  The aim is to get you familiar with basic distributed TF concepts that are reoccurring, such as TF servers.  You should work throught the content in the following order 
 
 1. [`Server.ipynb`](Servers.ipynb)
 2. [`Parameter-Server.ipynb`](Parameter-Server.ipynb)
