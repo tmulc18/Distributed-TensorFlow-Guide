@@ -72,17 +72,19 @@ def main():
 			for t in range(update_window):
 				if t != 0:
 					with tf.control_dependencies([opt_local]): #compute gradients only if the local opt was run
-						grads, varss = zip(*loptimizer.compute_gradients(loss,var_list=tf.local_variables()))
+						grads, varss = zip(*loptimizer.compute_gradients(loss,
+									var_list=tf.local_variables()))
 				else:
-					grads, varss = zip(*loptimizer.compute_gradients(loss,var_list=tf.local_variables())) 
+					grads, varss = zip(*loptimizer.compute_gradients(loss,
+							var_list=tf.local_variables())) 
 				grad_list.append(grads) #add gradients to the list
 				opt_local = loptimizer.apply_gradients(zip(grads,varss),
 										global_step=local_step) #update local parameters
 			grads = tf.reduce_mean(grad_list,axis=0)
 			grads = tuple([grads[i]for i in range(len(varss))])
 			opt = optimizer.apply_gradients(
-					zip(grads,[ local_to_global[v] for v in varss])
-					,global_step=global_step) #apply the gradients to variables on ps
+						zip(grads,[ local_to_global[v] for v in varss])
+						,global_step=global_step) #apply the gradients to variables on ps
 
 			# Pull param from global server
 			with tf.control_dependencies([opt]):
@@ -106,12 +108,12 @@ def main():
 
 		#Monitored Training Session
 		sess = tf.train.MonitoredTrainingSession(master=server.target,
-				is_chief=is_chief,
-				config=config,
-				scaffold=scaff,
-				hooks=hooks,
-				save_checkpoint_secs=1,
-				checkpoint_dir='logdir')
+					is_chief=is_chief,
+					config=config,
+					scaffold=scaff,
+					hooks=hooks,
+					save_checkpoint_secs=1,
+					checkpoint_dir='logdir')
 		if is_chief:
 			sess.run(assign_global) #Assigns chief's initial values to ps
 			time.sleep(10) #grace period to wait on other workers before starting training
