@@ -30,8 +30,8 @@ The complete list of examples is below. The first example, [`Non-Distributed-Set
 * [`Non-Distributed-Setup`](Non-Distributed_Setup.py)
 * [`Distributed-Setup`](Distributed-Setup)
 * [`HogWild`](Hogwild) (Asychronous SGD)
-* [`DOWNPOUR`](Downpour)
-* [`DOWNPOUR-Easy`](Downpour-easy/)<sup>1</sup>
+* [`DOWNPOUR`](DOWNPOUR)
+* [`DOWNPOUR-Easy`](DOWNPOUR-Easy/)<sup>1</sup>
 * [`ADAG`](ADAG) (Asynchronous Distributed Adaptive Gradients)
 * [`Synchronous-SGD`](Synchronous-sgd/)
 * [`Synchronous-SGD-different-learning-rates`](Synchronous-sgd-different-learning-rates/)
