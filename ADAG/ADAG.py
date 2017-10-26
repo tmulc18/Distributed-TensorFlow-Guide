@@ -51,7 +51,7 @@ def main():
 						name='local_step',collections=['local_non_trainable'])
 
 		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss,
-        	worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
+        		worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
 			loss = tf.reduce_mean(tf.square(c-target))
@@ -66,7 +66,7 @@ def main():
 			local_to_global, global_to_local = create_global_variables()
 		
 			# ADAG (simplest case since all batches are the same)
-			update_window = 3 # T: update/communication window, a.k.a number of gradients to use before sending to ps
+			update_window = 3 # T: update/communication window
 			grad_list = [] # the array to store the gradients through the communication window
 			for t in range(update_window):
 				if t != 0:
@@ -75,7 +75,7 @@ def main():
 									var_list=tf.local_variables()))
 				else:
 					grads, varss = zip(*loptimizer.compute_gradients(loss,
-							var_list=tf.local_variables())) 
+								var_list=tf.local_variables())) 
 				grad_list.append(grads) #add gradients to the list
 				opt_local = loptimizer.apply_gradients(zip(grads,varss),
 							global_step=local_step) #update local parameters
