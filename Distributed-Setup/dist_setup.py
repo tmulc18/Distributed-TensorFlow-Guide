@@ -17,19 +17,19 @@ log_dir = '/logdir'
 def main():
 	# Distributed Baggage
 	cluster = tf.train.ClusterSpec({
-                'ps':['localhost:2222'],
-								'worker':['localhost:2223']
-                }) #lets this node know about all other nodes
+        'ps':['localhost:2222'],
+				'worker':['localhost:2223']
+        }) #lets this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
 		server = tf.train.Server(cluster,
-                            job_name="ps",
-                            task_index=FLAGS.task_index)
+          job_name="ps",
+          task_index=FLAGS.task_index)
 		server.join()
 	else:
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
 		server = tf.train.Server(cluster,
-                            job_name="worker",
-                            task_index=FLAGS.task_index)
+          job_name="worker",
+          task_index=FLAGS.task_index)
 
 		# Graph
 		with tf.device('/cpu:0'):
@@ -44,8 +44,9 @@ def main():
 
 		# Session
 		# Monitored Training Session
-		sess = tf.train.MonitoredTrainingSession(master=server.target,
-                                            is_chief=is_chief)
+		sess = tf.train.MonitoredTrainingSession(
+          master=server.target,
+          is_chief=is_chief)
 		for i in range(1000):
 			if sess.should_stop(): break
 			sess.run(opt)

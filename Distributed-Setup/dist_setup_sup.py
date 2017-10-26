@@ -17,9 +17,9 @@ log_dir = '/logdir'
 def main():
 	# Distributed Baggage
 	cluster = tf.train.ClusterSpec({
-              'ps':['localhost:2222'],
-							'worker':['localhost:2223']
-              }) #lets this node know about all other nodes
+        'ps':['localhost:2222'],
+				'worker':['localhost:2223']
+        }) #lets this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
 		server = tf.train.Server(cluster,job_name="ps",task_index=FLAGS.task_index)
 		server.join()
@@ -40,8 +40,8 @@ def main():
 		# Session
     # Supervisor
 		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,
-                            is_chief=is_chief,
-                            save_model_secs=30)
+          is_chief=is_chief,
+          save_model_secs=30)
 		sess = sv.prepare_or_wait_for_session(server.target)
 		for i in range(1000):
 			if sv.should_stop(): break

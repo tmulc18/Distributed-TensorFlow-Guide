@@ -18,19 +18,19 @@ log_dir = '/logdir'
 def main():
 	# Server Setup
   cluster = tf.train.ClusterSpec({
-                    'ps':['localhost:2222'],
-                    'worker':['localhost:2223','localhost:2224']
-                    }) #allows this node know about all other nodes
+        'ps':['localhost:2222'],
+        'worker':['localhost:2223','localhost:2224']
+        }) #allows this node know about all other nodes
   if FLAGS.job_name == 'ps': #checks if parameter server
     server = tf.train.Server(cluster,
-                            job_name="ps",
-                            task_index=FLAGS.task_index)
+          job_name="ps",
+          task_index=FLAGS.task_index)
     server.join()
   else:
     is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
     server = tf.train.Server(cluster,
-                            job_name="worker",
-                            task_index=FLAGS.task_index)
+          job_name="worker",
+          task_index=FLAGS.task_index)
 		
     # Graph
     with tf.device('/cpu:0'):
@@ -45,8 +45,8 @@ def main():
 
 		# Session
     sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,
-                            is_chief=is_chief,
-                            save_model_secs=30)
+          is_chief=is_chief,
+          save_model_secs=30)
     sess = sv.prepare_or_wait_for_session(server.target)
     for i in range(1000):
       if sv.should_stop(): break

@@ -18,25 +18,25 @@ def main():
 
   # Server Setup
   cluster = tf.train.ClusterSpec({
-                    'ps':['localhost:2222'],
-                    'worker':['localhost:2223','localhost:2224']
-                    }) #allows this node know about all other nodes
+        'ps':['localhost:2222'],
+        'worker':['localhost:2223','localhost:2224']
+        }) #allows this node know about all other nodes
   if FLAGS.job_name == 'ps': #checks if parameter server
     server = tf.train.Server(cluster,
-                            job_name="ps",
-                            task_index=FLAGS.task_index,
-                            config=config)
+          job_name="ps",
+          task_index=FLAGS.task_index,
+          config=config)
     server.join()
   else: #it must be a worker server
     is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
     server = tf.train.Server(cluster,
-                            job_name="worker",
-                            task_index=FLAGS.task_index,
-                            config=config)
+          job_name="worker",
+          task_index=FLAGS.task_index,
+          config=config)
     
     # Graph
     worker_device = "/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index)
-    with tf.device(tf.train.replica_device_setter(ps_tasks=1, \
+    with tf.device(tf.train.replica_device_setter(ps_tasks=1,
           worker_device=worker_device)):
 
       a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
@@ -50,7 +50,7 @@ def main():
       # create an optimizer then wrap it with SynceReplicasOptimizer
       optimizer = tf.train.GradientDescentOptimizer(.0001)
       optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,
-          replicas_to_aggregate=REPLICAS_TO_AGGREGATE, total_num_replicas=2)
+            replicas_to_aggregate=REPLICAS_TO_AGGREGATE, total_num_replicas=2)
       
       opt = optimizer1.minimize(loss,global_step=global_step) # averages gradients
       #opt = optimizer1.minimize(REPLICAS_TO_AGGREGATE*loss,
@@ -63,10 +63,10 @@ def main():
 
     # Monitored Training Session
     sess = tf.train.MonitoredTrainingSession(master = server.target, 
-                                             is_chief=is_chief,
-                                             config=config,
-                                             hooks=hooks,
-                                             stop_grace_period_secs=10)
+          is_chief=is_chief,
+          config=config,
+          hooks=hooks,
+          stop_grace_period_secs=10)
 
     print('Starting training on worker %d'%FLAGS.task_index)
     while not sess.should_stop():
