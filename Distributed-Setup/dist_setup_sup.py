@@ -37,7 +37,7 @@ def main():
 		
 			opt = tf.train.GradientDescentOptimizer(.0001).minimize(loss)
 
-		# Session
+    # Session
     # Supervisor
 		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,
           is_chief=is_chief,

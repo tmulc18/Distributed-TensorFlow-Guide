@@ -42,8 +42,8 @@ def main():
 		
 			opt = tf.train.GradientDescentOptimizer(.0001).minimize(loss)
 
-		# Session
-		# Monitored Training Session
+    # Session
+    # Monitored Training Session
 		sess = tf.train.MonitoredTrainingSession(
           master=server.target,
           is_chief=is_chief)
