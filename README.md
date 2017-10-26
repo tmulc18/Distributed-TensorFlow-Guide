@@ -25,7 +25,7 @@ See the Basics-Tutorial folder for notebooks demonstrating core concepts used in
 
 ## Training Algorithm Examples
 
-The complete list of examples is below. The first example, [`Non-Distributed-Setup`](Non-Distributed_Setup.py), shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, [`Distributed-Setup`](Distributed-Setup/) shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). The remaining examples are a mix a synchronous and non-synchronous training schemes.
+The complete list of examples is below. The first example, [`Non-Distributed-Setup`](Non-Distributed_Setup.py), shows the basic learning problem we want to solve distributively; this example should be familiar to all since it doesn't use any distributed code.  The second example, [`Distributed-Setup`](Distributed-Setup/) shows the same problem being solved with distributed code (i.e. with one parameter server and one worker). The remaining examples are a mix of synchronous and non-synchronous training schemes.
 
 * [`Non-Distributed-Setup`](Non-Distributed_Setup.py)
 * [`Distributed-Setup`](Distributed-Setup)
