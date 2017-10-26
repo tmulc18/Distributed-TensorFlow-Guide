@@ -18,7 +18,7 @@ def main():
 	# Distributed Baggage
 	cluster = tf.train.ClusterSpec({
         'ps':['localhost:2222'],
-				'worker':['localhost:2223']
+        'worker':['localhost:2223']
         }) #lets this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
 		server = tf.train.Server(cluster,
