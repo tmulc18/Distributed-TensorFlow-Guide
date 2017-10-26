@@ -31,12 +31,12 @@ The complete list of examples is below. The first example, [`Non-Distributed-Set
 * [`Distributed-Setup`](Distributed-Setup)
 * [`HogWild`](Hogwild) (Asychronous SGD)
 * [`DOWNPOUR`](Downpour)
-* [`DOWNPOUR-Easy`](Downpour-easy)<sup>1</sup>
+* [`DOWNPOUR-Easy`](Downpour-easy/)<sup>1</sup>
 * [`ADAG`](ADAG) (Asynchronous Distributed Adaptive Gradients)
-* [`Synchronous-SGD`](Synchronous-sgd)
-* [`Synchronous-SGD-different-learning-rates`](Synchronous-sgd-different-learning-rates)
+* [`Synchronous-SGD`](Synchronous-sgd/)
+* [`Synchronous-SGD-different-learning-rates`](Synchronous-sgd-different-learning-rates/)
 * [`SDAG`](SDAG) (Synchronous Distributed Adaptive Gradients) **WIP**
-* [`Multiple-GPUs-Single-Machine`](Multiple-gpus-single-machine)
+* [`Multiple-GPUs-Single-Machine`](Multiple-gpus-single-machine/)
 * `Dynamic SGD` **TODO**
 * `Asynchronous Elastic Averaging SGD` (AEASGD) **TODO**
 * `Asynchronous Elastic Averaging Momentum SGD` (AEAMSGD) **TODO**
