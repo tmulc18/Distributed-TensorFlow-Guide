@@ -35,11 +35,11 @@ def main():
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
 			loss = tf.reduce_mean(tf.square(c-target))
 		
-			opt = tf.train.GradientDescentOptimizer(.0001).minimize(loss)
-
+			opt = tf.train.GradientDescentOptimizer(.0001).minimize(loss)		
+    
     # Session
     # Supervisor
-		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,
+    sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,
           is_chief=is_chief,
           save_model_secs=30)
 		sess = sv.prepare_or_wait_for_session(server.target)
