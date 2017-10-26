@@ -50,8 +50,7 @@ def main():
 			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,
 						name='local_step',collections=['local_non_trainable'])
 
-		with tf.device(tf.train.replica_device_setter(
-					ps_tasks=n_pss,
+		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss,
         	worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
