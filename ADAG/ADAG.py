@@ -18,41 +18,41 @@ def main():
 
 	#Server Setup
 	cluster_spec = {
-  						'ps':['localhost:2222'],
-  						'worker':['localhost:2223','localhost:2224']
-  						} #allows this node know about all other nodes
+  		'ps':['localhost:2222'],
+  		'worker':['localhost:2223','localhost:2224']
+  		} #allows this node know about all other nodes
 	n_pss = len(cluster_spec['ps']) #the number of parameter servers
 	n_workers = len(cluster_spec['worker']) #the number of worker nodes
 	cluster = tf.train.ClusterSpec(cluster_spec)
 
 	if FLAGS.job_name == 'ps': #checks if parameter server
 		server = tf.train.Server(cluster,
-														job_name="ps",
-														task_index=FLAGS.task_index,
-														config=config)
+				job_name="ps",
+				task_index=FLAGS.task_index,
+				config=config)
 		server.join()
 	else: #it must be a worker server
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
 		server = tf.train.Server(cluster,
-														job_name="worker",
-														task_index=FLAGS.task_index,
-														config=config)
+				job_name="worker",
+				task_index=FLAGS.task_index,
+				config=config)
 		
 		# Graph
 		# We must not use train.replicate_device_setter for normal operations
 		# Local operations
 		with tf.device("/job:worker/replica:0/task:%d" % FLAGS.task_index):
 			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
-																	collections=[tf.GraphKeys.LOCAL_VARIABLES])
+					collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
-																	collections=[tf.GraphKeys.LOCAL_VARIABLES])
+					collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			c=a+b
-			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='local_step',
-															 		collections=['local_non_trainable'])
+			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,
+					name='local_step',collections=['local_non_trainable'])
 
 		with tf.device(tf.train.replica_device_setter(
-										ps_tasks=n_pss, \
-                 		worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
+				ps_tasks=n_pss, \
+        worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
 			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
 			loss = tf.reduce_mean(tf.square(c-target))
@@ -81,8 +81,8 @@ def main():
 			grads = tf.reduce_mean(grad_list,axis=0)
 			grads = tuple([grads[i]for i in range(len(varss))])
 			opt = optimizer.apply_gradients(
-														zip(grads,[ local_to_global[v] for v in varss])
-														,global_step=global_step) #apply the gradients to variables on ps
+					zip(grads,[ local_to_global[v] for v in varss])
+					,global_step=global_step) #apply the gradients to variables on ps
 
 			# Pull param from global server
 			with tf.control_dependencies([opt]):
@@ -90,7 +90,7 @@ def main():
 
 			# Init ops
 			init_local = tf.variables_initializer(tf.local_variables() \
-																						+tf.get_collection('local_non_trainable'))#for local variables
+					+tf.get_collection('local_non_trainable'))#for local variables
 			init = tf.global_variables_initializer() # for global variables
 
 			# Grab global state before training so all workers have same initialization
@@ -106,12 +106,12 @@ def main():
 
 		#Monitored Training Session
 		sess = tf.train.MonitoredTrainingSession(master=server.target,
-																						is_chief=is_chief,
-																						config=config,
-																						scaffold=scaff,
-																						hooks=hooks,
-																						save_checkpoint_secs=1,
-																						checkpoint_dir='logdir')
+				is_chief=is_chief,
+				config=config,
+				scaffold=scaff,
+				hooks=hooks,
+				save_checkpoint_secs=1,
+				checkpoint_dir='logdir')
 		if is_chief:
 			sess.run(assign_global) #Assigns chief's initial values to ps
 			time.sleep(10) #grace period to wait on other workers before starting training
