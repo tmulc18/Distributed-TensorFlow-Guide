@@ -1,21 +1,25 @@
-"""
-Simple example with one parameter server and one worker.
+"""Simple example with one parameter server and one worker.
 
 Author: Tommy Mulc
 """
+
 
 from __future__ import print_function
 import tensorflow as tf
 import argparse
 import time
 import os
+
+
 FLAGS = None
 log_dir = '/logdir'
 
 def main():
-	#Distributed Baggage
-	cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
-										'worker':['localhost:2223']}) #lets this node know about all other nodes
+	# Distributed Baggage
+	cluster = tf.train.ClusterSpec({
+              'ps':['localhost:2222'],
+							'worker':['localhost:2223']
+              }) #lets this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
 		server = tf.train.Server(cluster,job_name="ps",task_index=FLAGS.task_index)
 		server.join()
@@ -34,7 +38,10 @@ def main():
 			opt = tf.train.GradientDescentOptimizer(.0001).minimize(loss)
 
 		# Session
-		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,is_chief=is_chief,save_model_secs=30)
+    # Supervisor
+		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,
+                            is_chief=is_chief,
+                            save_model_secs=30)
 		sess = sv.prepare_or_wait_for_session(server.target)
 		for i in range(1000):
 			if sv.should_stop(): break
@@ -53,7 +60,7 @@ if __name__ == '__main__':
     	default="",
     	help="One of 'ps', 'worker'"
     )
-    # Flags for defining the tf.train.Server
+  # Flags for defining the tf.train.Server
 	parser.add_argument(
     	"--task_index",
     	type=int,

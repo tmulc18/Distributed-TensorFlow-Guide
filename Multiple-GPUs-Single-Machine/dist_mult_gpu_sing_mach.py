@@ -1,5 +1,4 @@
-"""
-Asynchrnous training on multiple GPUs on the same machine.
+"""Asynchrnous training on multiple GPUs on the same machine.
 
 Author: Tommy Mulc
 """
@@ -14,11 +13,15 @@ log_dir = '/logdir'
 
 def main():
     # Server Setup
-    cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
-                                        'worker':['localhost:2223','localhost:2224']}) #lets this node know about all other nodes
+  cluster = tf.train.ClusterSpec({
+                    'ps':['localhost:2222'],
+                    'worker':['localhost:2223','localhost:2224']
+                    }) #allows this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
 		with tf.device('/cpu:0'):
-			server = tf.train.Server(cluster,job_name="ps",task_index=FLAGS.task_index)
+			server = tf.train.Server(cluster,
+                              job_name="ps",
+                              task_index=FLAGS.task_index)
 			server.join()
 	else:
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
@@ -36,9 +39,14 @@ def main():
 			opt = tf.train.GradientDescentOptimizer(.0001).minimize(loss)
 
 		# Session
-		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,is_chief=is_chief,save_model_secs=30)
-		gpu_options = tf.GPUOptions(allow_growth=True,allocator_type="BFC",visible_device_list="%d"%FLAGS.task_index)
-		config = tf.ConfigProto(gpu_options=gpu_options,allow_soft_placement=True)#,device_count={'GPU':1})
+		sv = tf.train.Supervisor(logdir=os.getcwd()+log_dir,
+                            is_chief=is_chief,
+                            save_model_secs=30)
+		gpu_options = tf.GPUOptions(allow_growth=True,
+                            allocator_type="BFC",
+                            visible_device_list="%d"%FLAGS.task_index)
+		config = tf.ConfigProto(gpu_options=gpu_options,
+                            allow_soft_placement=True)
 		sess = sv.prepare_or_wait_for_session(server.target,config=config)
 		for i in range(1000):
 			if sv.should_stop(): break
@@ -57,7 +65,7 @@ if __name__ == '__main__':
     	default="",
     	help="One of 'ps', 'worker'"
     )
-    # Flags for defining the tf.train.Server
+  # Flags for defining the tf.train.Server
 	parser.add_argument(
     	"--task_index",
     	type=int,

@@ -1,5 +1,4 @@
-"""
-Synchrous SGD with different learning rates
+"""Synchrous SGD with different learning rates
 
 Author: Tommy Mulc
 """
@@ -17,22 +16,31 @@ def main():
 	config=tf.ConfigProto(log_device_placement=False)
 
 	# Server Setup
-	cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
-										'worker':['localhost:2223','localhost:2224']}) #allows this node know about all other nodes
+	cluster = tf.train.ClusterSpec({
+										'ps':['localhost:2222'],
+										'worker':['localhost:2223','localhost:2224']
+										}) #allows this node know about all other nodes
 	if FLAGS.job_name == 'ps': #checks if parameter server
-		server = tf.train.Server(cluster,job_name="ps",task_index=FLAGS.task_index,config=config)
+		server = tf.train.Server(cluster,
+														job_name="ps",
+														task_index=FLAGS.task_index,
+														config=config)
 		server.join()
 	else: #it must be a worker server
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
-		server = tf.train.Server(cluster,job_name="worker",task_index=FLAGS.task_index,config=config)
+		server = tf.train.Server(cluster,
+														job_name="worker",
+														task_index=FLAGS.task_index,
+														config=config)
 		
 		# Graph
-		with tf.device(tf.train.replica_device_setter(ps_tasks=1\
-                ,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
+		worker_device = "/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index)
+		with tf.device(tf.train.replica_device_setter(ps_tasks=1, \
+           worker_device=worker_device)):
 
 			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
 			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
-			c=a+b
+			c = a+b
 
 			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
@@ -41,8 +49,10 @@ def main():
 			# all workers use the same learning rate and it is decided on by the task 0 
 			# or maybe the from the graph of the chief worker
 			base_lr = 1.
-			optimizer = tf.train.GradientDescentOptimizer(base_lr) #the learning rate set here is global
-			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=2,total_num_replicas=2)
+			optimizer = tf.train.GradientDescentOptimizer(base_lr)
+			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,
+																								replicas_to_aggregate=2,
+																								total_num_replicas=2)
 
 			# use different learning rates (hacky)
 			# only works for GradientDescentOptimizer
@@ -68,29 +78,30 @@ def main():
 		sync_replicas_hook = optimizer1.make_session_run_hook(is_chief)
 		stop_hook = tf.train.StopAtStepHook(last_step=10)
 		chief_hooks = [sync_replicas_hook,stop_hook]
-		scaff = tf.train.Scaffold(init_op=init,local_init_op=local_init,
-									ready_for_local_init_op=ready_for_local_init)
+		scaff = tf.train.Scaffold(init_op=init,
+															local_init_op=local_init,
+															ready_for_local_init_op=ready_for_local_init)
 
 		#Monitored Training Session
-		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief,config=config,
-													scaffold=scaff,hooks=chief_hooks,stop_grace_period_secs=10)
+		sess = tf.train.MonitoredTrainingSession(master=server.target,
+																						is_chief=is_chief,
+																						config=config,
+																						scaffold=scaff,
+																						hooks=chief_hooks,
+																						stop_grace_period_secs=10)
 
 		if is_chief:
 			sess.run(init_tokens_op)
 			time.sleep(40) #grace period to wait on other workers before starting training
 
 		print('Starting training on worker %d'%FLAGS.task_index)
-
 		while not sess.should_stop():
 			_,r,gs=sess.run([opt,c,global_step])
-
 			print(r,'step: ',gs,'worker: ',FLAGS.task_index)
-
 			if is_chief: time.sleep(1)
 			time.sleep(1)
 		print('Done',FLAGS.task_index)
 
-		# Must stop threads first
 		time.sleep(10) #grace period to wait before closing session
 		sess.close()
 		print('Session from worker %d closed cleanly'%FLAGS.task_index)

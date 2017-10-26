@@ -18,22 +18,28 @@ def main():
 	config=tf.ConfigProto(log_device_placement=False)
 
 	# Server Setup
-	cluster_spec = {'ps':['localhost:2222'],
-					'worker':['localhost:2223','localhost:2224']}
+	cluster_spec = {
+  						'ps':['localhost:2222'],
+  						'worker':['localhost:2223','localhost:2224']
+  						} #allows this node know about all other nodes
 	n_workers = len(cluster_spec['worker']) #the number of worker nodes
 	cluster = tf.train.ClusterSpec(cluster_spec) #allows this node know about all other nodes
 
 	if FLAGS.job_name == 'ps': #checks if parameter server
-		server = tf.train.Server(cluster,job_name="ps",task_index=FLAGS.task_index,config=config)
+		server = tf.train.Server(cluster,
+														job_name="ps",
+														task_index=FLAGS.task_index,
+														config=config)
 		server.join()
 	else: #it must be a worker server
 		is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
-		server = tf.train.Server(cluster,job_name="worker",task_index=FLAGS.task_index,config=config)
+		server = tf.train.Server(cluster,
+														job_name="worker",
+														task_index=FLAGS.task_index,
+														config=config)
 		# Graph
-		# with tf.device(tf.train.replica_device_setter(cluster=cluster)):
 		with tf.device(tf.train.replica_device_setter(ps_tasks=1\
                 ,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
-
 			a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
 			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
 			c=a+b
@@ -45,18 +51,21 @@ def main():
 			# all workers use the same learning rate and it is decided on by the task 0 
 			# or maybe the from the graph of the chief worker
 			base_lr = .0001
-			optimizer = tf.train.GradientDescentOptimizer(base_lr) #the learning rate set here is global
-			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=2,total_num_replicas=2)
+			optimizer = tf.train.GradientDescentOptimizer(base_lr)
+			optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,
+																								replicas_to_aggregate=2,
+																								total_num_replicas=2)
 		
 			# ADAG (simplest case since all batches are the same)
-			update_window = 5 # T: update window, a.k.a number of gradients to use before sending to ps
+			update_window = 5 # T: update window
 			grad_list = []
 			for t in range(update_window):
 				grads, varss = zip(*optimizer1.compute_gradients(loss))
 				grad_list.append(grads)
-			grads = tf.reduce_mean(grad_list,axis=0) #taking the mean is the same as dividing the sume of gradients by T
+			grads = tf.reduce_mean(grad_list,axis=0) #same as dividing the sume of gradients by T
 			grads = tuple([grads[i]for i in range(len(varss))])
-			opt = optimizer1.apply_gradients(zip(grads,varss),global_step=global_step) #averages gradients from all other workers
+			opt = optimizer1.apply_gradients(zip(grads,varss),
+																			global_step=global_step) #averages worker gradients 
 
 			# Initialized global step tokens
 			init_tokens_op = optimizer1.get_init_tokens_op()
@@ -80,8 +89,12 @@ def main():
 
 
 		#Monitored Training Session
-		sess = tf.train.MonitoredTrainingSession(master = server.target,is_chief=is_chief,config=config,
-													scaffold=scaff,hooks=chief_hooks,stop_grace_period_secs=10)
+		sess = tf.train.MonitoredTrainingSession(master=server.target,
+																						is_chief=is_chief,
+																						config=config,
+																						scaffold=scaff,
+																						hooks=chief_hooks,
+																						stop_grace_period_secs=10)
 
 		if is_chief:
 			sess.run(init_tokens_op)
@@ -98,13 +111,9 @@ def main():
 			time.sleep(1)
 		print('Done',FLAGS.task_index)
 
-		# if is_chief:
-		# 	sess.run()
-		# Must stop threads first
 		time.sleep(10) #grace period to wait before closing session
 		sess.close()
 		print('Session from worker %d closed cleanly'%FLAGS.task_index)
-
 
 
 if __name__ == '__main__':

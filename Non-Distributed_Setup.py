@@ -1,5 +1,4 @@
-"""
-The non-distributed solution to the problem.
+"""The non-distributed solution to the problem.
 
 Author: Tommy Mulc
 """

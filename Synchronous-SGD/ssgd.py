@@ -1,5 +1,4 @@
-"""
-Synchronous SGD
+"""Synchronous SGD
 
 Author: Tommy Mulc
 """
@@ -18,18 +17,27 @@ def main():
   config=tf.ConfigProto(log_device_placement=False)
 
   # Server Setup
-  cluster = tf.train.ClusterSpec({'ps':['localhost:2222'],
-                    'worker':['localhost:2223','localhost:2224']}) #allows this node know about all other nodes
+  cluster = tf.train.ClusterSpec({
+                    'ps':['localhost:2222'],
+                    'worker':['localhost:2223','localhost:2224']
+                    }) #allows this node know about all other nodes
   if FLAGS.job_name == 'ps': #checks if parameter server
-    server = tf.train.Server(cluster,job_name="ps",task_index=FLAGS.task_index,config=config)
+    server = tf.train.Server(cluster,
+                            job_name="ps",
+                            task_index=FLAGS.task_index,
+                            config=config)
     server.join()
   else: #it must be a worker server
     is_chief = (FLAGS.task_index == 0) #checks if this is the chief node
-    server = tf.train.Server(cluster,job_name="worker",task_index=FLAGS.task_index,config=config)
+    server = tf.train.Server(cluster,
+                            job_name="worker",
+                            task_index=FLAGS.task_index,
+                            config=config)
     
     # Graph
-    with tf.device(tf.train.replica_device_setter(ps_tasks=1\
-                ,worker_device="/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index))):
+    worker_device = "/job:%s/task:%d/cpu:0" % (FLAGS.job_name,FLAGS.task_index)
+    with tf.device(tf.train.replica_device_setter(ps_tasks=1, \
+          worker_device=worker_device)):
 
       a = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
       b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32)
@@ -40,19 +48,20 @@ def main():
       loss = tf.reduce_mean(tf.square(c-target))
 
       # create an optimizer then wrap it with SynceReplicasOptimizer
-      optimizer = tf.train.GradientDescentOptimizer(.0001) #the learning rate set here is global
+      optimizer = tf.train.GradientDescentOptimizer(.0001)
       optimizer1 = tf.train.SyncReplicasOptimizer(optimizer,
           replicas_to_aggregate=REPLICAS_TO_AGGREGATE, total_num_replicas=2)
       
       opt = optimizer1.minimize(loss,global_step=global_step) # averages gradients
-      #opt = optimizer1.minimize(REPLICAS_TO_AGGREGATE*loss,global_step=global_step) # hackily sums gradients
+      #opt = optimizer1.minimize(REPLICAS_TO_AGGREGATE*loss,
+      #                           global_step=global_step) # hackily sums gradients
 
     # Session
     sync_replicas_hook = optimizer1.make_session_run_hook(is_chief)
     stop_hook = tf.train.StopAtStepHook(last_step=10)
     hooks = [sync_replicas_hook,stop_hook]
 
-    #Monitored Training Session
+    # Monitored Training Session
     sess = tf.train.MonitoredTrainingSession(master = server.target, 
                                              is_chief=is_chief,
                                              config=config,
@@ -61,11 +70,8 @@ def main():
 
     print('Starting training on worker %d'%FLAGS.task_index)
     while not sess.should_stop():
-      # if sess.should_stop(): print("should stopped"); break
       _,r,gs=sess.run([opt,c,global_step])
-
       print(r,'step: ',gs,'worker: ',FLAGS.task_index)
-
       if is_chief: time.sleep(1)
       time.sleep(1)
     print('Done',FLAGS.task_index)
