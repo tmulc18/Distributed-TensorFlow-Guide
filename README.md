@@ -18,8 +18,8 @@ The aim of this guide is to aid all interesting in distributed deep learning, fr
 See the Basics-Tutorial folder for notebooks demonstrating core concepts used in distributed TensorFlow.  The rest of the examples assume understanding of the basics tutorial.
 
 * [`Servers.ipynb`](Basics-Tutorial/Servers.ipynb) -- basics of TensorFlow servers
-* [`Parameter Server.ipynb`](Basics-Tutorial/Parameter Server.ipynb) -- everything about parameter servers
-* [`Local then Global Variable.ipynb`](Basics-Tutorial/Local then Global Variable.ipynb) -- creates a graph locally then make global copies of the variables Useful for graphs that do local updates before pushing global updates (e.g. DOWNPOUR, ADAG, etc.)
+* [`Parameter Server.ipynb`](Basics-Tutorial/Parameter\ Server.ipynb) -- everything about parameter servers
+* [`Local\ then\ Global\ Variable.ipynb`](Basics-Tutorial/Local then Global Variable.ipynb) -- creates a graph locally then make global copies of the variables Useful for graphs that do local updates before pushing global updates (e.g. DOWNPOUR, ADAG, etc.)
 * [`Multiple-Workers`](Basics-Tutorial/Multiple-Workers/) -- contains three notebooks: one parameter server notebook and two worker notebooks  The exercise shows how global variables are communicated via the parameter server and how local updates can be made by explicitly placing ops on local devices
 
 
