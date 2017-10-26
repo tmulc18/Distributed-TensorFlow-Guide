@@ -18,9 +18,9 @@ def main():
 
 	#Server Setup
 	cluster_spec = {
-  		'ps':['localhost:2222'],
-  		'worker':['localhost:2223','localhost:2224']
-  		} #allows this node know about all other nodes
+  			'ps':['localhost:2222'],
+  			'worker':['localhost:2223','localhost:2224']
+  			} #allows this node know about all other nodes
 	n_pss = len(cluster_spec['ps']) #the number of parameter servers
 	n_workers = len(cluster_spec['worker']) #the number of worker nodes
 	cluster = tf.train.ClusterSpec(cluster_spec)
