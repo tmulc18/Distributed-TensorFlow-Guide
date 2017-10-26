@@ -9,9 +9,9 @@ This handbook is a collection of distributed training examples (that can act as 
 
 Almost all the examples can be run on a single machine with a CPU, and all the examples only use data-parallelism (i.e. between-graph replication).
 
-The motivation for this guide stems from the current state of distributed deep learning.  Deep learning papers typical demonstrate successful new architectures on some benchmark, but rarely show how these models can be trained with 1000x the data which is usually the requirement in industy.  Furthermore, most successful distributed cases use state-of-the-art hardware to bruteforce massive effective minibatches in a synchronous fashion across high-bandwidth networks; there has been little research showing the potention of asynchronous training (which is why there are a lot of those examples in this guide).  Finally, the lack of documenation for distributed TF was the real reason this project was started.  TF is a great tool that prides itself on its scalability, but unfortunately there are few examples that show how to make your model scale with datasize.  
+The motivation for this guide stems from the current state of distributed deep learning.  Deep learning papers typical demonstrate successful new architectures on some benchmark, but rarely show how these models can be trained with 1000x the data which is usually the requirement in industy.  Furthermore, most successful distributed cases use state-of-the-art hardware to bruteforce massive effective minibatches in a synchronous fashion across high-bandwidth networks; there has been little research showing the potential of asynchronous training (which is why there are a lot of those examples in this guide).  Finally, the lack of documenation for distributed TF was the real reason this project was started.  TF is a great tool that prides itself on its scalability, but unfortunately there are few examples that show how to make your model scale with datasize.  
 
-The aim of this guide is to aid all interesting in distributed deep learning, from beginners to researchers.
+The aim of this guide is to aid all interested in distributed deep learning, from beginners to researchers.
 
 ## Basics Tutorial
 
