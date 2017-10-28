@@ -1,7 +1,7 @@
 # Distributed TensorFlow Guide
  
 
-This guide is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of basic distributed TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [Distriubted Keras](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/). 
+This guide is a collection of distributed training examples (that can act as boilerplate code) and a tutorial of basic distributed TensorFlow.  Many of the examples focus on implementing well-known distributed training schemes, such as those available in [*dist-keras*](https://github.com/cerndb/dist-keras) which were discussed in the author's [blog post](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/). 
  
 <div align="center">
 <img src="imgs/data-parallelism.png" width=50%>
@@ -32,10 +32,10 @@ The complete list of examples is below. The first example, [`Non-Distributed-Set
 * [`HogWild`](Hogwild) (Asychronous SGD)
 * [`DOWNPOUR`](DOWNPOUR)
 * [`DOWNPOUR-Easy`](DOWNPOUR-Easy/)<sup>1</sup>
-* [`ADAG`](ADAG) (Asynchronous Distributed Adaptive Gradients)
+* [`AGN`](AGN) (Accumulated Gradient Normalization)
 * [`Synchronous-SGD`](Synchronous-SGD/)
 * [`Synchronous-SGD-different-learning-rates`](Synchronous-SGD-different-learning-rates/)
-* [`SDAG`](SDAG) (Synchronous Distributed Adaptive Gradients) **WIP**
+* [`SAGN`](SAGN) (Synchronous Accumulated Gradients Normalization)
 * [`Multiple-GPUs-Single-Machine`](Multiple-GPUs-Single-Machine/)
 * `Dynamic SGD` **TODO**
 * `Asynchronous Elastic Averaging SGD` (AEASGD) **TODO**
@@ -96,4 +96,5 @@ sudo pkill python
 * [Hogwild!](https://people.eecs.berkeley.edu/~brecht/papers/hogwildTR.pdf)
 * [DOWNPOUR](https://static.googleusercontent.com/media/research.google.com/en//archive/large_deep_networks_nips2012.pdf)
 * [ADAG](http://joerihermans.com/ramblings/distributed-deep-learning-part-1-an-introduction/)
+* [AGN](https://arxiv.org/abs/1710.02368)
 * [EASGD and EAMSGD](https://arxiv.org/abs/1412.6651)

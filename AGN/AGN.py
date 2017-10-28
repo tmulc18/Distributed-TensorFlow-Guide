@@ -1,4 +1,6 @@
 """Asynchronous Distributed Adaptive Gradients (ADAG)
+
+Formerly known as ADAG.
 Performs asynchronous updates with update window. 
 
 Author: Tommy Mulc
@@ -47,24 +49,17 @@ def main():
 			b = tf.Variable(tf.constant(0.,shape=[2]),dtype=tf.float32,
 						collections=[tf.GraphKeys.LOCAL_VARIABLES])
 			c=a+b
-			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,
-						name='local_step',collections=['local_non_trainable'])
 
-		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss,
-        	worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
-			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
 			target = tf.constant(100.,shape=[2],dtype=tf.float32)
 			loss = tf.reduce_mean(tf.square(c-target))
 
-			# all workers use the same learning rate and it is decided on by the task 0 
-			# or maybe the from the graph of the chief worker
-			lr = .0001
-			loptimizer = tf.train.GradientDescentOptimizer(lr) #local optimizer
-			optimizer = tf.train.GradientDescentOptimizer(lr) #the learning rate set here is global
+			local_step = tf.Variable(0,dtype=tf.int32,trainable=False,
+						name='local_step',collections=['local_non_trainable'])
 
-			#create global variables and/or references
-			local_to_global, global_to_local = create_global_variables()
-		
+			lr = .0001
+			# loptimizer = tf.train.GradientDescentOptimizer(lr) #local optimizer
+			loptimizer = tf.train.AdamOptimizer(lr) #local optimizer
+
 			# ADAG (simplest case since all batches are the same)
 			update_window = 3 # T: update/communication window
 			grad_list = [] # the array to store the gradients through the communication window
@@ -81,6 +76,24 @@ def main():
 							global_step=local_step) #update local parameters
 			grads = tf.reduce_mean(grad_list,axis=0)
 			grads = tuple([grads[i]for i in range(len(varss))])
+
+			# add these variables created by local optimizer to local collection
+			lopt_vars = add_global_variables_to_local_collection()
+
+			# delete the variables from the global collection
+			clear_global_collection()
+
+		with tf.device(tf.train.replica_device_setter(ps_tasks=n_pss,
+        	worker_device="/job:%s/task:%d" % (FLAGS.job_name,FLAGS.task_index))):
+			global_step = tf.Variable(0,dtype=tf.int32,trainable=False,name='global_step')
+			
+			# optimizer for central variables
+			optimizer = tf.train.AdamOptimizer(lr)
+			# optimizer = tf.train.GradientDescentOptimizer(lr)
+
+			#create global variables and/or references
+			local_to_global, global_to_local = create_global_variables(lopt_vars)
+		
 			opt = optimizer.apply_gradients(
 						zip(grads,[ local_to_global[v] for v in varss])
 						,global_step=global_step) #apply the gradients to variables on ps
@@ -123,10 +136,6 @@ def main():
 		while not sess.should_stop():
 			_,_,r,gs,ls = sess.run([opt,assign_locals,c,global_step,local_step])
 			print(r,"global step: "+str(gs),"worker: "+str(FLAGS.task_index),"local step: "+str(ls))
-			if gs % 7 == 1:
-				for j in grad_list:
-					print(sess.run(j),FLAGS.task_index)
-
 			time.sleep(1)
 		print('Done',FLAGS.task_index)
 
@@ -170,8 +179,10 @@ def get_global_variable_by_name(name):
 	return [v for v in tf.global_variables() if v.name == name][0]
 
 
-def create_global_variables():
+def create_global_variables(local_optimizer_vars = []):
 	"""Creates global variables for local variables on the graph.
+	Skips variables local variables that are created for
+	local optimization.
 
 	Returns dictionarys for local-to-global and global-to-local
 	variable mappings.
@@ -180,14 +191,36 @@ def create_global_variables():
 	global_to_local = {}
 	with tf.device('/job:ps/task:0'):
 		for v in tf.local_variables():
-			v_g = tf.get_variable('g/'+v.op.name,
-				shape = v.shape,
-				dtype = v.dtype,
-				trainable=True,
-				collections=[tf.GraphKeys.GLOBAL_VARIABLES,tf.GraphKeys.TRAINABLE_VARIABLES])
-			local_to_global[v] = v_g
-			global_to_local[v_g] = v
+			if v not in local_optimizer_vars:
+				v_g = tf.get_variable('g/'+v.op.name,
+					shape = v.shape,
+					dtype = v.dtype,
+					trainable=True,
+					collections=[tf.GraphKeys.GLOBAL_VARIABLES,
+								tf.GraphKeys.TRAINABLE_VARIABLES])
+				local_to_global[v] = v_g
+				global_to_local[v_g] = v
 	return local_to_global,global_to_local
+
+
+def add_global_variables_to_local_collection():
+	"""Adds all variables from the global collection
+	to the local collection.
+
+	Returns the list of variables added.
+	"""
+	r =[]
+	for var in tf.get_default_graph()._collections[tf.GraphKeys.GLOBAL_VARIABLES]:
+		tf.add_to_collection(tf.GraphKeys.LOCAL_VARIABLES,var)
+		r.append(var)
+	return r
+
+
+def clear_global_collection():
+	"""Removes all variables from global collection."""
+	g = tf.get_default_graph()
+	for _ in range(len(g._collections[tf.GraphKeys.GLOBAL_VARIABLES])):
+		del g._collections[tf.GraphKeys.GLOBAL_VARIABLES][0]
 
 
 if __name__ == '__main__':
